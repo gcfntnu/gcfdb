@@ -1,0 +1,61 @@
+#-*- mode:snakemake -*-
+
+# config
+extra_conf_fn = srcdir('mirbase.config')
+if os.path.exists(extra_conf_fn):
+    with open(extra_conf_fn) as fh:
+        c  = yaml.load(fh) or {}
+        update_config2(config, c)
+        
+MIRBASE_RELEASE = str(config['db']['mirbase'].get('release', '22'))
+ORG = config.get('organism', 'homo_sapiens')
+MIR_ORG = {'homo_sapiens': 'hsa',
+           'human': 'hsa',
+           'hsa': 'hsa',
+           'mus_musculus': 'mmu',
+           'mouse': 'mmu',
+           'mmu': 'mmu',
+           'rattus_norvegicus': 'rno',
+           'rat': 'rno',
+           'rno': 'rno'}
+
+MIRBASE_EXT = join(EXT_DIR, 'mirbase', ORG, MIRBASE_RELEASE)
+
+#include:
+#    'convert.rules'
+    
+
+rule mirbase_hairpin_fasta:
+    params:
+        url = 'ftp://mirbase.org/pub/mirbase/{}/hairpin.fa.gz'.format(MIRBASE_RELEASE),
+        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+    output:
+        join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
+    shell:
+        """
+        wget {params.url}
+	zcat  hairpin.fa.gz | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
+        rm hairpin.fa.gz
+        """
+        
+rule mirbase_mature_fasta:
+    params:
+        url = 'ftp://mirbase.org/pub/mirbase/{}/mature.fa.gz'.format(MIRBASE_RELEASE),
+        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+    output:
+        join(MIRBASE_EXT, 'fasta', 'mature.fa')
+    shell:
+        """
+        wget {params.url}
+	zcat  mature.fa.gz | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
+        rm mature.fa.gz
+        """
+
+rule mirbase_gff:        
+    params:
+        url = 'ftp://mirbase.org/pub/mirbase/{}/genomes'.format(MIRBASE_RELEASE),
+        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+    output:
+        join(MIRBASE_EXT, 'genes', 'genes.gff3')
+    shell:
+        'wget -O - {params.url}/{params.mirbase_org}.gff3 > {output}'
