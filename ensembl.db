@@ -22,7 +22,7 @@ else:
     ENS_NAME = ''
 
 ERCC = DB_CONF.get('add_ercc', False)
-REF_DIR = join(EXT_DIR, 'ensembl', ORG, ENS_VER)
+OUTDIR = join(EXT_DIR, 'ensembl', ORG, ENS_VER)
 
 # includes
 include:
@@ -41,7 +41,7 @@ rule ensembl_dna:
     params: 
         url = 'http://' + GENOME
     output:
-        join(REF_DIR, GENOME.split('/')[-1].split('.gz')[0])
+        join(OUTDIR, GENOME.split('/')[-1].split('.gz')[0])
     threads: 
         32
     log:
@@ -53,7 +53,7 @@ rule ensembl_cdna:
     params: 
         url = 'http://' + ENS_TRANSCRIPTOME
     output:
-        join(REF_DIR, ENS_TRANSCRIPTOME.split('/')[-1].split('.gz')[0])
+        join(OUTDIR, ENS_TRANSCRIPTOME.split('/')[-1].split('.gz')[0])
     threads: 
         32
     log:
@@ -65,7 +65,7 @@ rule ensembl_noncoding:
     params:
         url = 'http://' + ENS_NONCODING
     output:
-        join(REF_DIR, ENS_NONCODING.split('/')[-1].split('.gz')[0])
+        join(OUTDIR, ENS_NONCODING.split('/')[-1].split('.gz')[0])
     threads:
         32
     log:
@@ -77,7 +77,7 @@ rule ensembl_gtf:
     params: 
         url = 'http://' + GTF
     output: 
-        join(REF_DIR, GTF.split('/')[-1].split('.gz')[0])    
+        join(OUTDIR, GTF.split('/')[-1].split('.gz')[0])    
     threads:
         32
     log:
@@ -137,7 +137,7 @@ rule ensembl_cdna_gtf:
         gtf = rules.ensembl_add_ercc2gtf.output if ERCC else rules.ensembl_gtf.output,
         dna_index = rules.ensembl_index_genome.output
     output:
-        join(REF_DIR, ORG.capitalize() + '.' + ENS_VER + '.cdna.gtf.fa')
+        join(OUTDIR, ORG.capitalize() + '.' + ENS_VER + '.cdna.gtf.fa')
     singularity:
         'docker://gcfntnu/ensembl:0.1'
     shell:
@@ -151,11 +151,11 @@ rule ensembl_db_downloads:
         gtf = rules.ensembl_add_ercc2gtf.output if ERCC else rules.ensembl_gtf.output,
         genome_index = rules.ensembl_index_genome.output
     output:
-        genome = join(REF_DIR, 'fasta', 'genome.fa'),
-        cdna = join(REF_DIR, 'fasta', 'transcriptome.fa'),
-        gtf = join(REF_DIR, 'genes', 'genes.gtf'),
-        noncoding = join(REF_DIR, 'fasta', 'ncdna.fa'),
-        genome_index = join(REF_DIR, 'fasta', 'genome.fa.fai')
+        genome = join(OUTDIR, 'fasta', 'genome.fa'),
+        cdna = join(OUTDIR, 'fasta', 'transcriptome.fa'),
+        gtf = join(OUTDIR, 'genes', 'genes.gtf'),
+        noncoding = join(OUTDIR, 'fasta', 'ncdna.fa'),
+        genome_index = join(OUTDIR, 'fasta', 'genome.fa.fai')
     shell:
         """
         ln -sr {input.genome} {output.genome}
