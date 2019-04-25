@@ -9,7 +9,7 @@ rule convert_gtf2gene_csv:
     params:
         script = srcdir('scripts/gtf2genes.py')
     output:
-        join(REF_DIR, 'genes', 'genes.csv')
+        join(REF_DIR, 'genes', 'genes.tsv')
     singularity:
         'docker://gcfntnu/ensembl:0.1'
     shell:
@@ -21,7 +21,7 @@ rule convert_gtf2transcript_csv:
     params:
         script = srcdir('scripts/gtf2tx.py')
     output:
-        join(REF_DIR, 'genes', 'transcripts.csv')
+        join(REF_DIR, 'genes', 'transcripts.tsv')
     shell:
         'python {params.script} {input} > {output}'    
 

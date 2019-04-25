@@ -19,16 +19,13 @@ TX_EXT = join(EXT_DIR, '10xgenomics')
 TX_CONFIG = config.get('10xgenomics', {})
 
 rule txgenomics_whitelist:
-    input:
-        url = TX_CONFIG['cellranger_url']
     params:
-        fn = 'cellranger-3.0.0/cellranger-cs/3.0.0/lib/python/cellranger/barcodes/3M-february-2018.txt.gz'
+        fn = LIBPREP['cellranger']['whitelist'],
+        url = TX_CONFIG['whitelist_url']
     output:
         join(TX_EXT, 'whitelist.txt')
-    shadow:
-        'shallow'
     shell:
-        'curl -o cellranger-3.0.0.tar.gz {input.url} && tar --extract --file=cellranger-3.0.0.tar.gz -O {params.fn} | gunzip -c > {output}'
+        'wget -O {output} {params.url}/{params.fn}'
 
 rule txgenomics_org_prebuild:
     params:
@@ -49,7 +46,7 @@ rule txgenomics_transcriptome:
     output:
         join(TX_EXT, 'fasta', 'transcriptome.fa')
     shell:
-        'gffread -w {output} -g {input.genome} {input.gtf}'
+        'gffread -G -E -w {output} -g {input.genome} {input.gtf}'
         
 rule txgenomics_alevin_index:
     input:
@@ -69,12 +66,3 @@ rule txgenomics_alevin_index:
         '--index {params.out} '
         '--transcripts {input.transcriptome}'
 
-rule txgenomics_db_downloads:
-    input:
-        ref = join(TX_EXT, 'reference.json'),
-        whitelist = join(TX_EXT, 'whitelist.txt')
-
-rule txgenomics_db_all:
-    input:
-       whitelist = join(TX_EXT, 'whitelist.txt'),
-       salmon_index = join(TX_EXT, 'salmon', 'refInfo.json')

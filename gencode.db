@@ -36,7 +36,6 @@ if ERCC:
         'ercc.db'
 
 # GENCODE URLS
-
 GENOME = '{}://ftp.sanger.ac.uk/pub/gencode/Gencode_{}/release_{}/{}.primary_assembly.genome.fa.gz'
 GENOME = GENOME.format(PROTOCOL, GENCODE_ORG, GENCODE_RELEASE, GENCODE_VERSION)
 GTF = '{}://ftp.sanger.ac.uk/pub/gencode/Gencode_{}/release_{}/gencode.v{}.primary_assembly.annotation.gtf.gz'
@@ -139,12 +138,44 @@ rule gencode_add_ercc2gtf:
     shell:
         'cat {input} > {output}'
 
+rule gencode_index_genome:
+    input:
+        rules.gencode_add_ercc2genome.output if ERCC else rules.gencode_dna.output
+    output:
+        rules.gencode_add_ercc2genome.output[0] + '.fai' if ERCC else rules.gencode_dna.output[0] + '.fai'
+    singularity:
+        'docker://gcfntnu/ensembl:0.1'
+    shell:
+        'samtools faidx {input}'
+
+rule gencode_cdna_gtf:
+    input:
+        dna = rules.gencode_add_ercc2genome.output if ERCC else rules.gencode_dna.output,
+        gtf = rules.gencode_add_ercc2gtf.output if ERCC else rules.gencode_gtf.output,
+        dna_index = rules.gencode_index_genome.output
+    output:
+        join(OUTDIR, ORG.capitalize() + '.' + ENS_VER + '.cdna.gtf.fa')
+    singularity:
+        'docker://gcfntnu/ensembl:0.1'
+    shell:
+        'gffread -w {output} -G -E -g {input.dna} {input.gtf} '
+
+rule gencode_add_ercc2cdna_gtf:
+    input:
+        rules.gencode_cdna_gtf.output,
+        rules.ercc_files.output.ercc_fasta
+    output:
+        rules.gencode_cdna.output[0].split('.fa')[0] + '.ERCC92.fa'
+    shell:
+        'cat {input} > {output}'
+        
 rule gencode_db_downloads:
     input:
         genome = rules.gencode_add_ercc2genome.output if ERCC else rules.gencode_dna.output,
         cdna = rules.gencode_add_ercc2cdna.output if ERCC else rules.gencode_cdna.output,
         noncoding = rules.gencode_noncoding.output,
         gtf = rules.gencode_add_ercc2gtf.output if ERCC else rules.gencode_gtf.output,
+        genome_index = gencode_index_genome.output
     output:
         genome = join(OUTDIR, 'fasta', 'genome.fa'),
         cdna = join(OUTDIR, 'fasta', 'cdna.fa'),
@@ -152,28 +183,9 @@ rule gencode_db_downloads:
         noncoding = join(OUTDIR, 'fasta', 'ncdna.fa')
     shell:
         """
-        ln -s {input.genome} {output.genome}
-        ln -s {input.cdna} {output.cdna}
-        ln -s {input.gtf} {output.gtf}
-        ln -s {input.noncoding} {output.noncoding}
+        ln -sr {input.genome} {output.genome}
+        ln -sr {input.cdna} {output.cdna}
+        ln -sr {input.gtf} {output.gtf}
+        ln -sr {input.noncoding} {output.noncoding}
+        ln -sr {input.genome_index} {output.genome_index}
         """
-
-rule gencode_gtf2gene:
-    input:
-        rules.gencode_db_downloads.output.gtf
-    params:
-        script = srcdir('scripts/gtf2genes.py')
-    output:
-        join(OUTDIR, 'genes', 'genes.csv')
-    shell:
-        'python {params.script} {input} > {output}'
-        
-rule gencode_gtf2tx:
-    input:
-        rules.gencode_db_downloads.output.gtf
-    params:
-        script = srcdir('scripts/gtf2tx.py')
-    output:
-        join(OUTDIR, 'genes', 'transcripts.csv')
-    shell:
-        'python {params.script} {input} > {output}' 

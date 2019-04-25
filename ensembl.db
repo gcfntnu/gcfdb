@@ -25,11 +25,9 @@ ERCC = DB_CONF.get('add_ercc', False)
 OUTDIR = join(EXT_DIR, 'ensembl', ORG, ENS_VER)
 
 # includes
-include:
-    'ercc.db'
-
-include:
-    'convert.rules'
+if ERCC:
+    include:
+        'ercc.db'
 
 # ENSEMBL URLS 
 GENOME = DB_CONF['genome'].format(ENS_NAME, ENS_RELEASE, ORG, string.capwords(ORG), ENS_VER)
@@ -141,12 +139,21 @@ rule ensembl_cdna_gtf:
     singularity:
         'docker://gcfntnu/ensembl:0.1'
     shell:
-        'gffread -w {output} -g {input.dna} {input.gtf} '
+        'gffread -w {output} -G -E -g {input.dna} {input.gtf} '
+
+rule ensembl_add_ercc2cdna_gtf:
+    input:
+        rules.ensembl_cdna_gtf.output,
+        rules.ercc_files.output.ercc_fasta
+    output:
+        rules.ensembl_cdna.output[0].split('.fa')[0] + '.ERCC92.fa'
+    shell:
+        'cat {input} > {output}'
         
 rule ensembl_db_downloads:
     input:
         genome = rules.ensembl_add_ercc2genome.output if ERCC else rules.ensembl_dna.output,
-        cdna = rules.ensembl_add_ercc2cdna.output if ERCC else rules.ensembl_cdna_gtf.output,
+        cdna = rules.ensembl_add_ercc2cdna_gtf.output if ERCC else rules.ensembl_cdna_gtf.output,
         noncoding = rules.ensembl_noncoding.output,
         gtf = rules.ensembl_add_ercc2gtf.output if ERCC else rules.ensembl_gtf.output,
         genome_index = rules.ensembl_index_genome.output
