@@ -65,4 +65,3 @@ rule txgenomics_alevin_index:
         '--threads {threads} '
         '--index {params.out} '
         '--transcripts {input.transcriptome}'
-

@@ -189,3 +189,4 @@ rule gencode_db_downloads:
         ln -sr {input.noncoding} {output.noncoding}
         ln -sr {input.genome_index} {output.genome_index}
         """
+
