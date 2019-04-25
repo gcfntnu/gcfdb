@@ -78,3 +78,12 @@ rule convert_gtf2refflat:
         gzip refFlat.txt
         mv refFlat.txt.gz {output}
         """
+        
+rule convert_gtf_transcriptome:
+    input:
+        gtf = join(EXT_DIR, '{reference_db}', 'genes', 'genes.gtf'),
+        genome = join(EXT_DIR, '{reference_db}', 'fasta', 'genome.fa')
+    output:
+        join(EXT_DIR, '{reference_db}', 'fasta', 'transcriptome.fa')
+    shell:
+        'gffread -w {output} -G -E -g {input.genome} {input.gtf}'
