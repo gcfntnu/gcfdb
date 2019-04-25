@@ -11,7 +11,7 @@ rule ercc_files:
     params:
         url = 'https://tools.thermofisher.com/content/sfs/manuals/ERCC92.zip'
     output:
-        ercc_gtf = temp('_ERCC92.gtf'),
+        ercc_gtf = join(ERCC_DIR, 'ERCC92.gtf'),
         ercc_fasta = join(ERCC_DIR, 'ERCC92.fa')
     shell:
         """

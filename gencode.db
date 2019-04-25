@@ -105,7 +105,7 @@ rule gencode_gtf:
 rule gencode_add_ercc2genome:
     input:
         rules.gencode_dna.output,
-        rules.ercc_files.output.ercc_fasta
+        join(EXT_DIR, 'ERCC', 'ERCC92.fa')
     output:
         rules.gencode_dna.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
@@ -114,7 +114,7 @@ rule gencode_add_ercc2genome:
 rule gencode_add_ercc2cdna:
     input:
         rules.gencode_cdna.output,
-        rules.ercc_files.output.ercc_fasta
+        join(EXT_DIR, 'ERCC', 'ERCC92.fa')
     output:
         rules.gencode_cdna.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
@@ -123,7 +123,7 @@ rule gencode_add_ercc2cdna:
 rule gencode_add_ercc2noncoding:
     input:
         rules.gencode_noncoding.output,
-        rules.ercc_files.output.ercc_fasta
+        join(EXT_DIR, 'ERCC', 'ERCC92.fa')
     output:
         rules.gencode_noncoding.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
@@ -132,7 +132,7 @@ rule gencode_add_ercc2noncoding:
 rule gencode_add_ercc2gtf:
     input:
         rules.gencode_gtf.output,
-        rules.ercc_gtf.output
+        join(EXT_DIR, 'ERCC', 'ERCC92.gtf')
     output:
         rules.gencode_gtf.output[0].split('.gtf')[0] + '.ERCC92.gtf'
     shell:

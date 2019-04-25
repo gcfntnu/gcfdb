@@ -38,30 +38,3 @@ rule txgenomics_org_prebuild:
         star_index = join(TX_EXT, 'star', 'SA')
     shell:
         'curl {params.url} | tar xvz --strip-components=1 -C {params.out}'
-
-rule txgenomics_transcriptome:
-    input:
-        gtf = join(TX_EXT, 'genes', 'genes.gtf'),
-        genome = join(TX_EXT, 'fasta', 'genome.fa')
-    output:
-        join(TX_EXT, 'fasta', 'transcriptome.fa')
-    shell:
-        'gffread -G -E -w {output} -g {input.genome} {input.gtf}'
-        
-rule txgenomics_alevin_index:
-    input:
-        transcriptome = join(TX_EXT, 'fasta', 'transcriptome.fa')
-    output:
-        join(TX_EXT, 'salmon', 'refInfo.json')
-    params:
-        out = join(TX_EXT, 'salmon')
-    threads:
-        16
-    singularity:
-        'docker://flatberg/alevin:dev0.12'
-    shell:
-        'salmon index '
-        '--perfectHash '
-        '--threads {threads} '
-        '--index {params.out} '
-        '--transcripts {input.transcriptome}'

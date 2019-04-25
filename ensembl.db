@@ -86,7 +86,7 @@ rule ensembl_gtf:
 rule ensembl_addercc2genome:
     input:
         rules.ensembl_dna.output,
-        rules.ercc_files.output.ercc_fasta
+        join(EXT_DIR, 'ERCC', 'ERCC92.fa')
     output:
         rules.ensembl_dna.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
@@ -95,7 +95,7 @@ rule ensembl_addercc2genome:
 rule ensembl_add_ercc2cdna:
     input:
         rules.ensembl_cdna.output,
-        rules.ercc_files.output.ercc_fasta
+        join(EXT_DIR, 'ERCC', 'ERCC92.fa')
     output:
         rules.ensembl_cdna.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
@@ -104,7 +104,7 @@ rule ensembl_add_ercc2cdna:
 rule ensembl_add_ercc2noncoding:
     input:
         rules.ensembl_noncoding.output,
-        rules.ercc_files.output.ercc_fasta
+        join(EXT_DIR, 'ERCC', 'ERCC92.fa')
     output:
         rules.ensembl_noncoding.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
@@ -113,7 +113,7 @@ rule ensembl_add_ercc2noncoding:
 rule ensembl_add_ercc2gtf:
     input:
         rules.ensembl_gtf.output,
-        rules.ercc_gtf.output
+        join(EXT_DIR, 'ERCC', 'ERCC92.gtf')
     output:
         rules.ensembl_gtf.output[0].split('.gtf')[0] + '.ERCC92.gtf'
     shell:
