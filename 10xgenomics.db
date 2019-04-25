@@ -20,7 +20,7 @@ TX_CONFIG = config.get('10xgenomics', {})
 
 rule txgenomics_whitelist:
     input:
-        url = TX_CONFIG['cellranger_url']
+        url = LIBPREP['cellranger']['whitelist']
     params:
         fn = 'cellranger-3.0.0/cellranger-cs/3.0.0/lib/python/cellranger/barcodes/3M-february-2018.txt.gz'
     output:
@@ -49,32 +49,4 @@ rule txgenomics_transcriptome:
     output:
         join(TX_EXT, 'fasta', 'transcriptome.fa')
     shell:
-        'gffread -w {output} -g {input.genome} {input.gtf}'
-        
-rule txgenomics_alevin_index:
-    input:
-        transcriptome = join(TX_EXT, 'fasta', 'transcriptome.fa')
-    output:
-        join(TX_EXT, 'salmon', 'refInfo.json')
-    params:
-        out = join(TX_EXT, 'salmon')
-    threads:
-        16
-    singularity:
-        'docker://flatberg/alevin:dev0.12'
-    shell:
-        'salmon index '
-        '--perfectHash '
-        '--threads {threads} '
-        '--index {params.out} '
-        '--transcripts {input.transcriptome}'
-
-rule txgenomics_db_downloads:
-    input:
-        ref = join(TX_EXT, 'reference.json'),
-        whitelist = join(TX_EXT, 'whitelist.txt')
-
-rule txgenomics_db_all:
-    input:
-       whitelist = join(TX_EXT, 'whitelist.txt'),
-       salmon_index = join(TX_EXT, 'salmon', 'refInfo.json')
+        'gffread -w {output} -G -E -g {input.genome} {input.gtf}'

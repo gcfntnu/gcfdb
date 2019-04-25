@@ -12,4 +12,4 @@ if ADD_TXVER:
 cols = df_tx.columns.copy()
 cols = cols.insert(0, 'transcript_id')
 df_tx = df_tx[cols]
-df_tx.to_csv(sys.stdout, sep=',', index=False)
+df_tx.to_csv(sys.stdout, sep='\t', index=False)
