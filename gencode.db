@@ -28,7 +28,7 @@ GENCODE_VERSION = DB_CONF.get('gencode_version', 'GRCh38')
 TRANSCRIPTOME_TYPE = DB_CONF.get('transcriptome_type', '') #['pc_','all']
 PROTOCOL = DB_CONF.get('protocol', 'http')
 ERCC = DB_CONF.get('add_ercc', False)
-REF_DIR = join(EXT_DIR, 'gencode', ORG, GENCODE_VERSION)
+OUTDIR = join(EXT_DIR, 'gencode', ORG, GENCODE_VERSION)
 
 # includes
 if ERCC:
@@ -154,7 +154,7 @@ rule gencode_cdna_gtf:
         gtf = rules.gencode_add_ercc2gtf.output if ERCC else rules.gencode_gtf.output,
         dna_index = rules.gencode_index_genome.output
     output:
-        join(OUTDIR, ORG.capitalize() + '.' + ENS_VER + '.cdna.gtf.fa')
+        join(OUTDIR, ORG.capitalize() + '.' + GENCODE_VERSION + '.cdna.gtf.fa')
     singularity:
         'docker://gcfntnu/ensembl:0.1'
     shell:
@@ -168,19 +168,21 @@ rule gencode_add_ercc2cdna_gtf:
         rules.gencode_cdna.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
         'cat {input} > {output}'
-        
+
+
 rule gencode_db_downloads:
     input:
         genome = rules.gencode_add_ercc2genome.output if ERCC else rules.gencode_dna.output,
         cdna = rules.gencode_add_ercc2cdna.output if ERCC else rules.gencode_cdna.output,
         noncoding = rules.gencode_noncoding.output,
         gtf = rules.gencode_add_ercc2gtf.output if ERCC else rules.gencode_gtf.output,
-        genome_index = gencode_index_genome.output
+        genome_index = rules.gencode_index_genome.output
     output:
         genome = join(OUTDIR, 'fasta', 'genome.fa'),
         cdna = join(OUTDIR, 'fasta', 'cdna.fa'),
         gtf = join(OUTDIR, 'genes', 'genes.gtf'),
-        noncoding = join(OUTDIR, 'fasta', 'ncdna.fa')
+        noncoding = join(OUTDIR, 'fasta', 'ncdna.fa'),
+        genome_index = join(OUTDIR, 'fasta', 'genome.fa.fai')
     shell:
         """
         ln -sr {input.genome} {output.genome}

@@ -153,13 +153,13 @@ rule ensembl_add_ercc2cdna_gtf:
 rule ensembl_db_downloads:
     input:
         genome = rules.ensembl_add_ercc2genome.output if ERCC else rules.ensembl_dna.output,
-        cdna = rules.ensembl_add_ercc2cdna_gtf.output if ERCC else rules.ensembl_cdna_gtf.output,
+        cdna = rules.ensembl_add_ercc2cdna.output if ERCC else rules.ensembl_cdna.output,
         noncoding = rules.ensembl_noncoding.output,
         gtf = rules.ensembl_add_ercc2gtf.output if ERCC else rules.ensembl_gtf.output,
         genome_index = rules.ensembl_index_genome.output
     output:
         genome = join(OUTDIR, 'fasta', 'genome.fa'),
-        cdna = join(OUTDIR, 'fasta', 'transcriptome.fa'),
+        cdna = join(OUTDIR, 'fasta', 'cdna.fa'),
         gtf = join(OUTDIR, 'genes', 'genes.gtf'),
         noncoding = join(OUTDIR, 'fasta', 'ncdna.fa'),
         genome_index = join(OUTDIR, 'fasta', 'genome.fa.fai')

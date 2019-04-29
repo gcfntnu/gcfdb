@@ -29,9 +29,7 @@ rule convert_gtf2txg:
     input:
         rules.convert_gtf2gene_csv.output
     output:
-        join(REF_DIR, 'genes', 'tx2gene.txt')
-    singularity:
-        'docker://gcfntnu/ensembl:0.1'
+        join(REF_DIR, 'genes', 'tx2gene.tsv')
     shell:
         'cut -f1,10 {input} > {output}'
         
@@ -87,3 +85,16 @@ rule convert_gtf_transcriptome:
         join(EXT_DIR, '{reference_db}', 'fasta', 'transcriptome.fa')
     shell:
         'gffread -w {output} -G -E -g {input.genome} {input.gtf}'
+        
+rule convert_gtf_transcriptome_rsem:
+    input:
+        gtf = join(EXT_DIR, '{reference_db}', 'genes', 'genes.gtf'),
+        genome = join(EXT_DIR, '{reference_db}', 'fasta', 'genome.fa')
+    params:
+        base = join(EXT_DIR, '{reference_db}', 'fasta', 'cdna')
+    singularity:
+        'docker://quay.io/biocontainers/rsem:1.3.1--pl526r341h4f16992_0'
+    output:
+        join(EXT_DIR, '{reference_db}', 'fasta', 'cdna.transcripts.fa')
+    shell:
+        'rsem-prepare-reference --gtf {input.gtf} {input.genome} {params.base}'
