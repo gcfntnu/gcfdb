@@ -2,6 +2,17 @@
 """Converters between common fileformats
 """
 
+rule convert_filter_gtf:
+    input:
+        join(REF_DIR, 'genes', 'genes.gtf')
+    output:
+        join(REF_DIR, 'genes', 'genes.filtered.gtf')
+    singularity:
+        lambda x: config['quant']['cellranger']['docker']
+    params:
+        lambda x: ' '.join('--attribute={}'.format(i) for i in  config['quant']['cellranger']['mkgtf'].get('gene_biotype'))
+    shell:
+        'cellranger mkgtf '
 
 rule convert_gtf2gene_csv:
     input:

@@ -13,9 +13,12 @@ if os.path.exists(extra_conf_fn):
         update_config2(config, c)
 
 ORG = config.get('organism', 'homo_sapiens')
-DB_CONF = config.get('db', {}).get('ensembl', {})
+if '__' in ORG:
+    raise ValueError('Multispecies genome is not supported for Ensembl!')
+
+DB_CONF = config['db']['ensembl']
 ENS_RELEASE = str(DB_CONF.get('release', '94'))
-ENS_VER = DB_CONF.get('version', 'GRCh38')
+ENS_VER = DB_CONF['version'][ORG]
 if ORG == 'homo_sapiens':
     ENS_NAME = '' if ENS_VER == 'GRCh38' else '/grch37'
 else:

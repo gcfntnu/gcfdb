@@ -19,8 +19,9 @@ if os.path.exists(extra_conf_fn):
 GC_ORG_MAP = {'homo_sapiens':  'human',
               'mus_musculus': 'mouse',
               'rattus_norwegicus': 'rat'}
-
 ORG = config.get('organism', 'homo_sapiens')
+if '__' in ORG:
+    raise ValueError('Multispecies genome is not supported for Gencode')
 GENCODE_ORG = GC_ORG_MAP.get(ORG, '')
 DB_CONF = config['db']['gencode']
 GENCODE_RELEASE = DB_CONF.get('release', 27)
