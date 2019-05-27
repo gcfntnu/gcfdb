@@ -5,6 +5,7 @@
 
 UCSC_ORG = {'homo_sapiens': 'Human',
             'mus_musculus': 'Mouse'}
+ORG = config['organism']
 
 rule ucsc_rmsk:
     output:
