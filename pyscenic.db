@@ -6,7 +6,7 @@ Auxilary data downloads
 https://github.com/aertslab/pySCENIC
 """
 ORG = config['organism']
-PYSCENIC_EXT = join(DATA_EXT, 'pyscenic', ORG)
+PYSCENIC_EXT = join(EXT_DIR, 'pyscenic', ORG)
 
 MOTIF2TF = {'homo_sapiens': 'https://resources.aertslab.org/cistarget/motif2tf/motifs-v9-nr.hgnc-m0.001-o0.0.tbl',
          'mus_musculus': 'https://resources.aertslab.org/cistarget/motif2tf/motifs-v9-nr.mgi-m0.001-o0.0.tbl'
@@ -23,6 +23,8 @@ rule pyscenic_tf:
         url = TF[ORG]
     output:
         join(PYSCENIC_EXT, 'tfs.txt')
+    log:
+        join(PYSCENIC_EXT, 'tfs.log')
     shell:
         'wget -O - {params.url} -o {log} > {output}'
 
