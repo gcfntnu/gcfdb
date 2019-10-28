@@ -5,6 +5,20 @@ support.10xgenomics.com/single-cell-gene-expression/software/downloads
 
 """
 
+_URLS= {
+    'homo_sapiens': 'http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-GRCh38-3.0.0.tar.gz',
+    'mus_musculus': 'http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-mm10-3.0.0.tar.gz',
+    'homo_sapiens__mus_musculus': 'http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-GRCh38-and-mm10-3.1.0.tar.gz',
+    'ercc': 'http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-ercc92-1.2.0.tar.gz',
+    'whitelist_url': 'https://folk.ntnu.no/geiramh/10xgenomics',
+   'sc3pv2_indexset': 'http://cf.10xgenomics.com/supp/cell-exp/chromium-shared-sample-indexes-plate.csv'
+}
+
+_ASSEMBLY = {'homo_sapiens': 'GRCh38'
+             'mus_musculus': 'GRCm38'
+             'homo_sapiens__mus_musculus': 'GRCh37_GRCm37'
+}
+
 from os.path import join
 
 extra_conf_fn = srcdir('10xgenomics.config')
@@ -15,14 +29,16 @@ if os.path.exists(extra_conf_fn):
 
 # config
 ORG = config.get('organism', 'homo_sapiens')
+if org not in ['homo_sapiens', 'mus_musculus', 'homo_sapiens__mus_musculus']:
+    raise ValueError('No 10x prebuild for org: {}'.format(ORG))
 TX_CONFIG = config['db'].get('10xgenomics', {})
-_NAME = TX_CONFIG['version'][ORG]
+_NAME = TX_CONFIG['assembly'] = _ASSEMBLY[ORG]
 TX_EXT = join(EXT_DIR, '10xgenomics', ORG, _NAME)
 
 rule txgenomics_whitelist:
     params:
         fn = LIBPREP['cellranger']['whitelist'],
-        url = TX_CONFIG['whitelist_url']
+        url = _URLS['whitelist_url']
     output:
         join(EXT_DIR, '10xgenomics', 'whitelist.txt')
     shell:
@@ -30,7 +46,7 @@ rule txgenomics_whitelist:
 
 rule txgenomics_org_prebuild:
     params:
-        url = TX_CONFIG['prebuilds'][ORG],
+        url = _URLS[ORG],
         out = TX_EXT
     output:
         json = join(TX_EXT, 'reference.json'),
