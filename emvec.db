@@ -12,12 +12,16 @@ rule contaminants_emvec_fasta:
     """emvec processing from centrifuge code
     """
     params:
-        url = 'http://ftp.ebi.ac.uk/pub/databases/emvec/emvec.dat.gz'
+        url = 'http://ftp.ebi.ac.uk/pub/databases/emvec/emvec.dat.gz',
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(EXT_DIR, 'emvec', 'fasta', 'emvec.fa')
+    log:
+       join(EXT_DIR, 'emvec', 'logs', 'emvec.log') 
     shell:
         """
         wget {params.url} -O- | gunzip -c | grep -E '^DE|^ ' | awk '/^DE/ {{ sub(/DE */,">"); gsub(/[ |]/,"_") }}; {{ print }}' | awk '/^ / {{ gsub(/ /,""); sub(/[0-9]*$/,"") }}; {{ print}}' > {output}
+        echo "EMVec,NA,{params.url},{params.date}" > {log}
         """
 
 rule contaminants_emvec_anno:
