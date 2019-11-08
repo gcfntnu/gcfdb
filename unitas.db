@@ -29,7 +29,7 @@ rule unitas_extra_reference:
     input:
         UNITAS_REFSEQ
     output:
-        join(QUANT_INTERIM, 'unitas', 'refseq.fa')
+        join(EXT_DIR, 'unitas', 'refseq.fa')
     shell:
         'cat {input} > {output}'
 

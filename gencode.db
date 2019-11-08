@@ -191,7 +191,7 @@ rule gencode_cdna_gtf:
         gtf = rules.gencode_add_ercc2gtf.output if ERCC else rules.gencode_gtf.output,
         dna_index = rules.gencode_index_genome.output
     output:
-        join(OUTDIR, ORG.capitalize() + '.' + ENS_ASSEMBLY + '.cdna.gtf.fa')
+        join(OUTDIR, ORG.capitalize() + '.' + GENCODE_ASSEMBLY + '.cdna.gtf.fa')
     singularity:
         'docker://gcfntnu/ensembl:0.1'
     shell:

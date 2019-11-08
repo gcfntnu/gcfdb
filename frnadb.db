@@ -5,9 +5,9 @@ The Functional RNA Database 3.0: databases to support mining and annotation of f
 Nucleic Acids Research/2009/D89-92
 """
 
-FRNADB_VERSION = config.get('frnadb_version', '20160329')
+FRNADB_VERSION = config['db'].get('frnadb_version', '20160329')
 
-FRNADB_ORG = {'homo_sapiens': 'Homo_sapiens'
+FRNADB_ORG = {'homo_sapiens': 'Homo_sapiens',
       	      'human': 'Homo_sapiens',			
               'mus_musculus': 'Mus_musculus',	
               'mouse': 'Mus_musculus',
@@ -20,6 +20,11 @@ rule frnadb_fasta:
         url = 'ftp://ftp.biosciencedbc.jp/archive/frnadb/{}/Sequence_Data'.format(FRNADB_VERSION),
         frnadb_org = lambda wildcards: FRNADB_ORG[wildcards.org]
     output:
-        'data/ext/frnadb/{org}/fasta/seq.fa'
-    shell:
-        'wget -O- {params.url}/{params.frnadb_org}.zip | unzip -c > {output}'
+        join(EXT_DIR, 'frnadb', '{org}', 'fasta', 'frna.fa')
+    log:
+        join(EXT_DIR, 'frnadb', '{org}', 'logs', 'frna.log')
+    run:
+        shell('wget -O- {params.url}/{params.frnadb_org}.zip | unzip -c > {output}')
+        date = datetime.now().strftime("%d-%m-%Y")
+        with open(log[0], 'w') as fh:
+            fh.write('Functional RNA Database,{},{},{}'.format(FRNADB_VERSION, params.url, date))

@@ -14,8 +14,8 @@ _URLS= {
    'sc3pv2_indexset': 'http://cf.10xgenomics.com/supp/cell-exp/chromium-shared-sample-indexes-plate.csv'
 }
 
-_ASSEMBLY = {'homo_sapiens': 'GRCh38'
-             'mus_musculus': 'GRCm38'
+_ASSEMBLY = {'homo_sapiens': 'GRCh38',
+             'mus_musculus': 'GRCm38',
              'homo_sapiens__mus_musculus': 'GRCh37_GRCm37'
 }
 
@@ -29,7 +29,7 @@ if os.path.exists(extra_conf_fn):
 
 # config
 ORG = config.get('organism', 'homo_sapiens')
-if org not in ['homo_sapiens', 'mus_musculus', 'homo_sapiens__mus_musculus']:
+if ORG not in ['homo_sapiens', 'mus_musculus', 'homo_sapiens__mus_musculus']:
     raise ValueError('No 10x prebuild for org: {}'.format(ORG))
 TX_CONFIG = config['db'].get('10xgenomics', {})
 _NAME = TX_CONFIG['assembly'] = _ASSEMBLY[ORG]
@@ -37,12 +37,11 @@ TX_EXT = join(EXT_DIR, '10xgenomics', ORG, _NAME)
 
 rule txgenomics_whitelist:
     params:
-        fn = LIBPREP['cellranger']['whitelist'],
         url = _URLS['whitelist_url']
     output:
-        join(EXT_DIR, '10xgenomics', 'whitelist.txt')
+        join(EXT_DIR, '10xgenomics', '{whitelist}.txt')
     shell:
-        'wget -O {output} {params.url}/{params.fn}'
+        'wget -O {output} {params.url}/{wildcards.whitelist}'
 
 rule txgenomics_org_prebuild:
     params:

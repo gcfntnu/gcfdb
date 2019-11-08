@@ -4,6 +4,7 @@ http://seqanswers.com/forums/archive/index.php/t-42552.html
 bbmap.sh in=ref.fa 
 bbduk.sh -Xmx1g in=reads.fq out=clean.fq ref=phix.fasta k=31 hdist=1
 """
+from os.path import join
 
 rule jgi_bacterial_eukaryot:
     params:

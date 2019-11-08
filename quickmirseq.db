@@ -35,7 +35,7 @@ rule quickmirseq_mirbase_index:
 rule quickmirseq_smallrna_index:
     input:
         trna = rules.gtrnadb_trna.output,
-        non_coding = rules.emsembl_noncoding_reference.output
+        non_coding = rules.ensembl_db_downloads.output.noncoding
     params:
         index = join(EXT_DIR, 'quickmirseq', '{org}')
     output:
@@ -58,7 +58,7 @@ rule quickmirseq_smallrna_index:
 
 rule quickmirseq_mrna_index:
     input:
-        cdna = rules.emsembl_cdna_reference.output
+        cdna = rules.ensembl_db_downloads.output.cdna
     params:
         index = join(EXT_DIR, 'quickmirseq', '{org}')
     output:
@@ -75,7 +75,7 @@ rule quickmirseq_mrna_index:
         
 rule quickmirseq_genome_index:
     input:
-        noncoding = rules.ensembl_dna_reference.output
+        genome = rules.ensembl_db_downloads.output.genome
     params:
         index_base = join(EXT_DIR, 'quickmirseq', '{org}', 'genome')
     output:
@@ -87,7 +87,7 @@ rule quickmirseq_genome_index:
     singularity:
         'docker://gcfntnu/quickmirseq:1.0'
     shell:
-        'bowtie-build {input.noncoding} {params.index_base} '
+        'bowtie-build {input.genome} {params.index_base} '
         '&& cp {input.noncoding} {output[0]} '
 
 rule quickmirseq_download:

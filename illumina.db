@@ -1,6 +1,8 @@
 #-*- mode:snakemake -*-
 """External data from Illumina
 """
+import tempfile
+
 ILMN_EXT = join(EXT_DIR, 'illumina')
 
 rule illumina_phix:
@@ -11,6 +13,6 @@ rule illumina_phix:
         tmp_file = tempfile.mkstemp(suffix='.tar.gz')[-1]
     shell:
         """
-        wget -O {params.tmp_file} {params.url}; 
-        tar xvzfO {params.tmp_file} PhiX/Illumina/RTA/Sequence/Chromosomes/phix.fa > {output}; 
+        wget -O {params.tmp_file} {params.url}
+        tar xvzfO {params.tmp_file} PhiX/Illumina/RTA/Sequence/Chromosomes/phix.fa > {output}
         """
