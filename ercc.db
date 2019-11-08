@@ -9,10 +9,13 @@ ERCC_DIR = join(EXT_DIR, 'ERCC')
 
 rule ercc_files:
     params:
-        url = 'https://tools.thermofisher.com/content/sfs/manuals/ERCC92.zip'
+        url = 'https://tools.thermofisher.com/content/sfs/manuals/ERCC92.zip',
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         ercc_gtf = join(ERCC_DIR, 'ERCC92.gtf'),
         ercc_fasta = join(ERCC_DIR, 'ERCC92.fa')
+    log:
+       join(ERCC_DIR, 'ERCC92.log') 
     shell:
         """
         wget {params.url}
@@ -20,6 +23,7 @@ rule ercc_files:
         mv ERCC92.gtf {output.ercc_gtf}
         mv ERCC92.fa {output.ercc_fasta}
         rm ERCC92.zip
+        echo "ERCC,NA,{params.url},{params.date}" > {log}
         """
 
 rule ercc_gtf:
@@ -28,8 +32,9 @@ rule ercc_gtf:
     output:
         join(EXT_DIR, 'ERCC92.custom.gtf')
     params:
-        script = srcdir('scripts/fix_ercc_gtf')
+        script = srcdir('scripts/fix_ercc_gtf.py'),
+        args = '--exon2gene ' if config['db'].get('ercc2gene', False) else ''
     shell:
-        '{params.script} {input} > {output}'
+        '{params.script} {input} {params.args} > {output}'
 
     
