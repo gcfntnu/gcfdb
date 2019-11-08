@@ -28,7 +28,7 @@ MIRBASE_EXT = join(EXT_DIR, 'mirbase', ORG, MIRBASE_RELEASE)
 rule mirbase_hairpin_fasta:
     params:
         url = 'ftp://mirbase.org/pub/mirbase/{}/hairpin.fa.gz'.format(MIRBASE_RELEASE),
-        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+        mirbase_org = MIR_ORG[ORG]
     output:
         join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
     shell:
@@ -41,7 +41,7 @@ rule mirbase_hairpin_fasta:
 rule mirbase_mature_fasta:
     params:
         url = 'ftp://mirbase.org/pub/mirbase/{}/mature.fa.gz'.format(MIRBASE_RELEASE),
-        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+        mirbase_org = MIR_ORG[ORG]
     output:
         join(MIRBASE_EXT, 'fasta', 'mature.fa')
     shell:
@@ -54,7 +54,7 @@ rule mirbase_mature_fasta:
 rule mirbase_gff:        
     params:
         url = 'ftp://mirbase.org/pub/mirbase/{}/genomes'.format(MIRBASE_RELEASE),
-        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+        mirbase_org = MIR_ORG[ORG]
     output:
         join(MIRBASE_EXT, 'genes', 'genes.gff3')
     shell:
