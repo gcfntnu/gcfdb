@@ -7,7 +7,7 @@ if os.path.exists(extra_conf_fn):
         c  = yaml.load(fh) or {}
         update_config2(config, c)
         
-MIRCARTA_RELEASE = str(config['db'].get('mircarta', {}).get('release', '22'))
+MIRCARTA_RELEASE = str(config['db'].get('mircarta', {}).get('release', '1.1'))
 ORG = config.get('organism', 'homo_sapiens')
 MIR_ORG = {'homo_sapiens': 'hsa',
            'human': 'hsa',
@@ -26,27 +26,63 @@ MIRCARTA_EXT = join(EXT_DIR, 'mircarta', ORG, MIRCARTA_RELEASE)
 
 rule mircarta_hairpin_fasta:
     params:
-        url = MIRCARTA_URL,
-        mircarta_org = lambda wildcards: MIR_ORG[wildcards.org]
+        url = join(MIRCARTA_URL, '{}_precursors.fa'.format(MIR_ORG[ORG]))
     output:
         join(MIRCARTA_EXT, 'fasta', 'hairpin.fa')
     shell:
-        """wget {params.url}/{params.mircarta_org}_precursors.fa | sed 's/U/T/g' > {output}"""
+        """wget {params.url} -O- | sed 's/U/T/g' > {output}"""
+
+rule mircarta_hairpin_log:
+    params:
+        url = join(MIRCARTA_URL, '{}_precursors.fa'.format(MIR_ORG[ORG]))
+    output:
+        log = join(MIRCARTA_EXT, 'logs', 'hairpin.log')
+    run:
+        date = datetime.now().strftime("%d-%m-%Y")
+        with open(output.log, 'w') as fh:
+            fh.write('Mircarta hairpin,{},{},{}\n'.format(MIRCARTA_RELEASE, params.url, date))   
         
 rule mircarta_mature_fasta:
     params:
-        url = MIRCARTA_URL,
-        mircarta_org = lambda wildcards: MIR_ORG[wildcards.org]
+        url = join(MIRCARTA_URL, '{}_mirnas.fa'.format(MIR_ORG[ORG]))
     output:
         join(MIRCARTA_EXT, 'fasta', 'mature.fa')
     shell:
-        """wget {params.url}/{params.mircarta_org}_mirnas.fa | sed 's/U/T/g' > {output}"""
+        """wget {params.url}  -O- | sed 's/U/T/g' > {output}"""
 
+rule mircarta_mature_log:
+    params:
+        url = join(MIRCARTA_URL, '{}_precursors.fa'.format(MIR_ORG[ORG]))
+    output:
+        log = join(MIRCARTA_EXT, 'logs', 'mature.log')
+    run:
+        date = datetime.now().strftime("%d-%m-%Y")
+        with open(output.log, 'w') as fh:
+            fh.write('Mircarta mature,{},{},{}\n'.format(MIRCARTA_RELEASE, params.url, date))   
+        
 rule mircarta_gff:        
     params:
-        url = MIRCARTA_URL,
-        mircarta_org = lambda wildcards: MIR_ORG[wildcards.org]
+        url = join(MIRCARTA_URL, '{}.gff3'.format(MIR_ORG[ORG]))
     output:
         join(MIRCARTA_EXT, 'genes', 'genes.gff3')
     shell:
-        'wget -O - {params.url}/{params.mircarta_org}.gff3 > {output}'
+        'wget -O- {params.url}  > {output}'
+        
+rule mircarta_gff_log:
+    params:
+        url = join(MIRCARTA_URL, '{}_precursors.fa'.format(MIR_ORG[ORG]))
+    output:
+        log = join(MIRCARTA_EXT, 'logs', 'gff.log')
+    run:
+        date = datetime.now().strftime("%d-%m-%Y")
+        with open(output.log, 'w') as fh:
+            fh.write('Mircarta gff,{},{},{}\n'.format(MIRCARTA_RELEASE, params.url, date))   
+
+rule mircarta_all:
+    input:
+        join(MIRCARTA_EXT, 'fasta', 'hairpin.fa'),
+        join(MIRCARTA_EXT, 'fasta', 'mature.fa'),
+        join(MIRCARTA_EXT, 'genes', 'genes.gff3'),
+        join(MIRCARTA_EXT, 'logs', 'hairpin.log'),
+        join(MIRCARTA_EXT, 'logs', 'mature.log'),
+        join(MIRCARTA_EXT, 'logs', 'gff.log')

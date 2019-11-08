@@ -33,26 +33,41 @@ rule mirbase_hairpin_fasta:
         url = URLS['hairpin'],
         mirbase_org = MIR_ORG[ORG]
     output:
-        join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
+        fasta = join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
     shell:
-        """
-        wget {params.url}
-	zcat  hairpin.fa.gz | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
-        rm hairpin.fa.gz
-        """
+        """wget {params.url} -O- | gunzip -c | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output.fasta}"""
+
+rule mirbase_hairpin_log:
+    params:
+        url = URLS['hairpin']
+    output:
+        log = join(MIRBASE_EXT, 'logs', 'hairpin.log')
+    run:
+        date = datetime.now().strftime("%d-%m-%Y")
+        with open(output.log, 'w') as fh:
+            fh.write('Mirbase hairpin,{},{},{}\n'.format(MIRBASE_RELEASE, params.url, date))   
+
         
 rule mirbase_mature_fasta:
     params:
         url = URLS['mature'],
         mirbase_org = MIR_ORG[ORG]
     output:
-        join(MIRBASE_EXT, 'fasta', 'mature.fa')
+        log = join(MIRBASE_EXT, 'fasta', 'mature.fa')
     shell:
         """
-        wget {params.url}
-	zcat  mature.fa.gz | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
-        rm mature.fa.gz
+        wget {params.url} -O- | gunzip -c | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
         """
+        
+rule mirbase_mature_log:
+    params:
+        url = URLS['hairpin']
+    output:
+        log = join(MIRBASE_EXT, 'logs', 'mature.log')
+    run:
+        date = datetime.now().strftime("%d-%m-%Y")
+        with open(output.log, 'w') as fh:
+            fh.write('Mirbase mature,{},{},{}\n'.format(MIRBASE_RELEASE, params.url, date))   
 
 rule mirbase_gff:        
     params:
@@ -63,18 +78,22 @@ rule mirbase_gff:
     shell:
         'wget -O - {params.url}/{params.mirbase_org}.gff3 > {output}'
 
-rule mirbase_all:
-    input:
-        hairpin = join(MIRBASE_EXT, 'fasta', 'hairpin.fa'),
-        mature = join(MIRBASE_EXT, 'fasta', 'mature.fa'),
-        gff = join(MIRBASE_EXT, 'genes', 'genes.gff3')
+rule mirbase_gff_log:
+    params:
+        url = URLS['hairpin']
     output:
-        join(MIRBASE_EXT, 'log', 'mirbase.log')
+        log = join(MIRBASE_EXT, 'logs', 'gff.log')
     run:
         date = datetime.now().strftime("%d-%m-%Y")
-        with open(log[0], 'w') as fh:
-            for name in input.keys():
-                url = URLS[name]
-                fh.write('Mirbase {},{},{}'.format(name, url, date))
-
+        with open(output.log, 'w') as fh:
+            fh.write('Mirbase gff,{},{},{}\n'.format(MIRBASE_RELEASE, params.url, date))
+            
+rule mirbase_all:
+    input:
+        join(MIRBASE_EXT, 'fasta', 'hairpin.fa'),
+        join(MIRBASE_EXT, 'fasta', 'mature.fa'),
+        join(MIRBASE_EXT, 'genes', 'genes.gff3'),
+        join(MIRBASE_EXT, 'logs', 'hairpin.log'),
+        join(MIRBASE_EXT, 'logs', 'mature.log'),
+        join(MIRBASE_EXT, 'logs', 'gff.log')
                 
