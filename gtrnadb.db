@@ -29,10 +29,15 @@ def gtrnadb_url(wildcards):
 
 rule gtrnadb_trna:
     params:
-        url = gtrnadb_url
+        url = gtrnadb_url,
+        date = datetime.now().strftime("%d-%m-%Y"),
+        version = GTRNADB_VER[ORG]
     output:
-        'data/ext/gtrnadb/{}/tRNAs.fa'.format(ORG)
+        join(EXT_DIR, 'gtrnadb', ORG, 'tRNAs.fa')
     log:
-        'logs/gtrnadb.{}.log'.format(ORG)
+        join(EXT_DIR, 'gtrnadb', ORG, 'logs', 'gtrnadb.log')
     shell:
-        'wget -O {output} {params.url} 2> {log}'
+        """
+        wget -O {output} {params.url}
+        echo "GtRNAdb,{params.version},{params.url},{params.date}" > {log}
+        """
