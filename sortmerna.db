@@ -4,6 +4,13 @@ from os.path import join
 
 _SORTMERNA_TMP = os.path.join(environ.get('TMPDIR', '/tmp'), 'sortmerna')
 
+# config
+extra_conf_fn = srcdir('sortmerna.config')
+if os.path.exists(extra_conf_fn):
+    with open(extra_conf_fn) as fh:
+        c  = yaml.load(fh) or {}
+        update_config2(config, c)
+
 rule sortmerna_db:
     params:
         out = join(EXT_DIR, 'sortmerna'),
@@ -37,5 +44,4 @@ rule sortmerna_index_one:
         'docker://flatberg/filter:0.1'
     shell:
         'indexdb_rna --ref {input.fasta},{params.index}'
-
-        
+    

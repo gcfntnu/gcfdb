@@ -1,4 +1,5 @@
 #-*- mode:snakemake -*-
+from datetime import datetime
 
 # config
 extra_conf_fn = srcdir('mirbase.config')
@@ -21,41 +22,60 @@ MIR_ORG = {'homo_sapiens': 'hsa',
 
 MIRBASE_EXT = join(EXT_DIR, 'mirbase', ORG, MIRBASE_RELEASE)
 
-#include:
-#    'convert.rules'
+URLS = {'hairpin': 'ftp://mirbase.org/pub/mirbase/{}/hairpin.fa.gz'.format(MIRBASE_RELEASE),
+        'mature': 'ftp://mirbase.org/pub/mirbase/{}/mature.fa.gz'.format(MIRBASE_RELEASE),
+        'gff': 'ftp://mirbase.org/pub/mirbase/{}/genomes'.format(MIRBASE_RELEASE)
+}
     
 
 rule mirbase_hairpin_fasta:
     params:
-        url = 'ftp://mirbase.org/pub/mirbase/{}/hairpin.fa.gz'.format(MIRBASE_RELEASE),
-        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+        url = URLS['hairpin'],
+        mirbase_org = MIR_ORG[ORG],
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
-        join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
+        fasta = join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
+    log:
+        join(MIRBASE_EXT, 'logs', 'hairpin.log')
     shell:
         """
-        wget {params.url}
-	zcat  hairpin.fa.gz | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
-        rm hairpin.fa.gz
+        wget {params.url} -O- | gunzip -c | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output.fasta}
+        echo "Mirbase hairpin,{MIRBASE_RELEASE},{params.url},{params.date}" > {log}
         """
-        
+
 rule mirbase_mature_fasta:
     params:
-        url = 'ftp://mirbase.org/pub/mirbase/{}/mature.fa.gz'.format(MIRBASE_RELEASE),
-        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+        url = URLS['mature'],
+        mirbase_org = MIR_ORG[ORG],
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
-        join(MIRBASE_EXT, 'fasta', 'mature.fa')
+        fasta = join(MIRBASE_EXT, 'fasta', 'mature.fa')
+    log:
+        join(MIRBASE_EXT, 'logs', 'mature.log')
     shell:
         """
-        wget {params.url}
-	zcat  mature.fa.gz | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
-        rm mature.fa.gz
+        wget {params.url} -O- | gunzip -c | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
+        echo "Mirbase mature,{MIRBASE_RELEASE},{params.url},{params.date}" > {log}
         """
 
 rule mirbase_gff:        
     params:
-        url = 'ftp://mirbase.org/pub/mirbase/{}/genomes'.format(MIRBASE_RELEASE),
-        mirbase_org = lambda wildcards: MIR_ORG[wildcards.org]
+        url = URLS['gff'],
+        mirbase_org = MIR_ORG[ORG],
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(MIRBASE_EXT, 'genes', 'genes.gff3')
+    log:
+       join(MIRBASE_EXT, 'logs', 'gff.log') 
     shell:
-        'wget -O - {params.url}/{params.mirbase_org}.gff3 > {output}'
+        """
+        wget -O - {params.url}/{params.mirbase_org}.gff3 > {output}
+        echo "Mirbase gff,{MIRBASE_RELEASE},{params.url},{params.date}" > {log}
+        """
+            
+rule mirbase_all:
+    input:
+        join(MIRBASE_EXT, 'fasta', 'hairpin.fa'),
+        join(MIRBASE_EXT, 'fasta', 'mature.fa'),
+        join(MIRBASE_EXT, 'genes', 'genes.gff3')
+                

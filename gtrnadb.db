@@ -21,9 +21,9 @@ GTRNADB_NAME = {'homo_sapiens': 'Hsapi',
                 'rat': 'Rnorv'}
 
 def gtrnadb_url(wildcards):
-    org = GTRNADB_ORG[wildcards.org]
-    name = GTRNADB_NAME[wildcards.org]
-    ver = GTRNADB_VER[wildcards.org]
+    org = GTRNADB_ORG[ORG]
+    name = GTRNADB_NAME[ORG]
+    ver = GTRNADB_VER[ORG]
     url = 'http://gtrnadb.ucsc.edu/genomes/eukaryota/{}{}/{}{}-tRNAs.fa'.format(name, ver, org, ver)
     return url
 
@@ -33,6 +33,6 @@ rule gtrnadb_trna:
     output:
         'data/ext/gtrnadb/{}/tRNAs.fa'.format(ORG)
     log:
-        'logs/gtrnadb.{org}.log'
+        'logs/gtrnadb.{}.log'.format(ORG)
     shell:
         'wget -O {output} {params.url} 2> {log}'

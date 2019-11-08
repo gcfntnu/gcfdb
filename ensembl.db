@@ -73,7 +73,6 @@ def ensembl_search(org, strain=None, assembly=None):
     else:
         grch37 = False
     S = _ens_species_rest(grch37)
-    print(S)
     hit = _search_names(S, org, strain)
     return hit
 

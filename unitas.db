@@ -9,6 +9,14 @@ from os.path import join
 
 CALIBRATORS_EXTEND = config['filter'].get('calibrators_extend', False)
 UNITAS_REFSEQ = []
+_unitas_map = {'homo_sapiens': 'Human',
+              'human': 'Human',
+               'hsa': 'Human',
+               'mus_musculus': 'Mouse',
+               'mouse': 'Mouse',
+               'mmu': 'Mouse'}
+UNITAS_ORG = _unitas_map[config.get('organism')]
+
 
 if config['filter'].get('filter_calibrators'):
     if config['filter']['calibrator_quantifier'] == 'unitas':
@@ -21,6 +29,17 @@ rule unitas_extra_reference:
     input:
         UNITAS_REFSEQ
     output:
-        join(QUANT_INTERIM, 'unitas', 'refseq.fa')
+        join(EXT_DIR, 'unitas', 'refseq.fa')
     shell:
         'cat {input} > {output}'
+
+rule unitas_db:   
+    output:
+        directory(join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG)))
+    singularity:
+        'docker://gcfntnu/unitas:1.7.0'     
+    shell:
+        """
+        unitas.pl -latest_ref -species {ORG} -input haha.txt
+        mv UNITAS_refdump_* {EXT_DIR}/unitas/
+        """
