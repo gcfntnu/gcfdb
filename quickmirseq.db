@@ -20,9 +20,11 @@ rule quickmirseq_mirbase_index:
         index = join(EXT_DIR, 'quickmirseq', '{org}'),
         args = '--cutoff 0 --library stranded --extension5 4 --extension3 5'
     singularity:
-        'docker://flatberg/quickmirseq:01'
+        'docker://gcfntnu/quickmirseq:1.0'
     output:
         join(QMSQ_EXT, 'mirna_0_0.fa')
+    log:
+       join(QMSQ_EXT, 'QuickMIRSeq-build.log')
     shell:
         'perl $QuickMIRSeq/QuickMIRSeq-build.pl '
         '--target {params.index} '
@@ -45,7 +47,7 @@ rule quickmirseq_smallrna_index:
         join(EXT_DIR, 'quickmirseq', '{org}', 'smallRNA.rev.1.ebwt'),
         join(EXT_DIR, 'quickmirseq', '{org}', 'smallRNA.rev.2.ebwt')
     singularity:
-        'docker://flatberg/quickmirseq:01'  
+        'docker://gcfntnu/quickmirseq:1.0'
     shell:
         # merge creates a fasta file one entry per biotype 
         """
@@ -66,14 +68,14 @@ rule quickmirseq_mrna_index:
         join(EXT_DIR, 'quickmirseq', '{org}', 'mrna.rev.1.ebwt'),
         join(EXT_DIR, 'quickmirseq', '{org}', 'mrna.rev.2.ebwt')
     singularity:
-        'docker://flatberg/quickmirseq:01' 
+        'docker://gcfntnu/quickmirseq:1.0'
     shell:
         'bowtie-build {input.cdna} {params.index}/mrna '
         '&& cp {input.cdna} {output[0]} '
         
 rule quickmirseq_genome_index:
     input:
-        noncoding = rules.emsembl_dna_reference.output
+        noncoding = rules.ensembl_dna_reference.output
     params:
         index_base = join(EXT_DIR, 'quickmirseq', '{org}', 'genome')
     output:
@@ -83,7 +85,7 @@ rule quickmirseq_genome_index:
         join(EXT_DIR, 'quickmirseq', '{org}', 'genome.rev.1.ebwt'),
         join(EXT_DIR, 'quickmirseq', '{org}', 'genome.rev.2.ebwt')
     singularity:
-        'docker://flatberg/quickmirseq:01' 
+        'docker://gcfntnu/quickmirseq:1.0'
     shell:
         'bowtie-build {input.noncoding} {params.index_base} '
         '&& cp {input.noncoding} {output[0]} '

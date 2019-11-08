@@ -1,4 +1,5 @@
 #-*- mode:snakemake -*-
+from datetime import datetime
 
 # config
 extra_conf_fn = srcdir('mirbase.config')
@@ -21,13 +22,15 @@ MIR_ORG = {'homo_sapiens': 'hsa',
 
 MIRBASE_EXT = join(EXT_DIR, 'mirbase', ORG, MIRBASE_RELEASE)
 
-#include:
-#    'convert.rules'
+URLS = {'hairpin': 'ftp://mirbase.org/pub/mirbase/{}/hairpin.fa.gz'.format(MIRBASE_RELEASE),
+        'mature': 'ftp://mirbase.org/pub/mirbase/{}/mature.fa.gz'.format(MIRBASE_RELEASE),
+        'gff': 'ftp://mirbase.org/pub/mirbase/{}/genomes'.format(MIRBASE_RELEASE)
+}
     
 
 rule mirbase_hairpin_fasta:
     params:
-        url = 'ftp://mirbase.org/pub/mirbase/{}/hairpin.fa.gz'.format(MIRBASE_RELEASE),
+        url = URLS['hairpin'],
         mirbase_org = MIR_ORG[ORG]
     output:
         join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
@@ -40,7 +43,7 @@ rule mirbase_hairpin_fasta:
         
 rule mirbase_mature_fasta:
     params:
-        url = 'ftp://mirbase.org/pub/mirbase/{}/mature.fa.gz'.format(MIRBASE_RELEASE),
+        url = URLS['mature'],
         mirbase_org = MIR_ORG[ORG]
     output:
         join(MIRBASE_EXT, 'fasta', 'mature.fa')
@@ -53,9 +56,25 @@ rule mirbase_mature_fasta:
 
 rule mirbase_gff:        
     params:
-        url = 'ftp://mirbase.org/pub/mirbase/{}/genomes'.format(MIRBASE_RELEASE),
+        url = URLS['gff'],
         mirbase_org = MIR_ORG[ORG]
     output:
         join(MIRBASE_EXT, 'genes', 'genes.gff3')
     shell:
         'wget -O - {params.url}/{params.mirbase_org}.gff3 > {output}'
+
+rule mirbase_all:
+    input:
+        hairpin = join(MIRBASE_EXT, 'fasta', 'hairpin.fa'),
+        mature = join(MIRBASE_EXT, 'fasta', 'mature.fa'),
+        gff = join(MIRBASE_EXT, 'genes', 'genes.gff3')
+    output:
+        join(MIRBASE_EXT, 'log', 'mirbase.log')
+    run:
+        date = datetime.now().strftime("%d-%m-%Y")
+        with open(log[0], 'w') as fh:
+            for name in input.keys():
+                url = URLS[name]
+                fh.write('Mirbase {},{},{}'.format(name, url, date))
+
+                
