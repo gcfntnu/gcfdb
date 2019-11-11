@@ -41,3 +41,9 @@ def update_config2(config, extra_config):
                     d[key] = value
         return d
     return _update(config, extra_config)
+
+
+default_config_sections = ['db', 'quant', 'filter', 'analysis', 'samples']
+for section in default_config_sections:
+    if section not in config:
+        config[section] = {}

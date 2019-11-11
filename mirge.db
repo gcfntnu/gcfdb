@@ -38,14 +38,35 @@ MIRGE_ORG = {'homo_sapiens': 'human',
            'rat': 'rat',
            'rat': 'rat'}
 
-rule mirge_download_db:
-    params:
-        url = URLS[MIRGE_ORG[ORG]],
-        out = MIRGE_EXT
-    output:
-        join(MIRGE_EXT, 'index.Libs', '{}_snorna.3.ebwt'.format(MIRGE_ORG[ORG]))
-    shell:
-        'wget -qO- {params.url} | tar xvz --strip-components 1 -C {params.out}'
+if ORG == 'homo_sapiens':
+    rule mirge_download_db:
+        params:
+            url = URLS[MIRGE_ORG[ORG]],
+            out = MIRGE_EXT,
+            date = datetime.now().strftime("%d-%m-%Y")
+        output:
+            join(MIRGE_EXT, 'index.Libs', '{}_snorna.3.ebwt'.format(MIRGE_ORG[ORG]))
+        log:
+            join(MIRGE_EXT, 'logs', 'mirge_reference.log')
+        shell:
+            """
+            wget -qO- {params.url} | tar xvz --strip-components 1 -C {params.out}
+            echo "mirge,NA,{params.url},{params.date}" > {log}
+            """
+else:
+    rule mirge_download_db:
+        params:
+            url = URLS[MIRGE_ORG[ORG]],
+            out = MIRGE_EXT
+        output:
+            join(MIRGE_EXT, 'annotation.Libs', '{}_trna.str'.format(MIRGE_ORG[ORG].lower()))
+        log:
+            join(MIRGE_EXT, 'logs', 'mirge_reference.log') 
+        shell:
+            """
+            wget -qO- {params.url} | tar xvz --strip-components 1 -C {params.out}
+            echo "mirge,NA,{params.url},{params.date}" > {log}
+            """
 
 rule mirge_add_trf_human:
     input:
@@ -62,8 +83,8 @@ rule mirge_add_trf_human:
         rm missingtrffiles.zip
         """
 
-rule mirge_db:
+rule mirge_db_all:
     input:
-        'data/ext/mirge/{0}/index.Libs/{1}_snorna.3.ebwt'.format(ORG, MIRGE_ORG[ORG])
+        join(MIRGE_EXT, 'annotation.Libs', '{}_trna.str'.format(MIRGE_ORG[ORG].lower()))
         
         

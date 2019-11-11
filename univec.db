@@ -32,11 +32,17 @@ database may be missed when UniVec_Core is used.
 rule contaminants_univec_fasta:
     params:
         url = 'http://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec',
-        url_core = 'http://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec_Core'
+        url_core = 'http://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec_Core',
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(EXT_DIR, 'univec', 'fasta', 'univec.fa')
+    log:
+        join(EXT_DIR, 'univec', 'univec.log')
     shell:
-        'wget {params.url_core} -O- > {output}'
+        """
+        wget {params.url_core} -O- > {output}
+        echo "UniVec core,NA,{params.url_core},{params.date}" > {log}
+        """
 
 rule univec_anno:
     input:

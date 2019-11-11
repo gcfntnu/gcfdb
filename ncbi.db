@@ -1,20 +1,39 @@
 #-*- mode:snakemake -*-
-"""NCBI/ENTREZ data mainly fetched usin efetch
+"""NCBI data mainly fetched using efetch
 """
 
 rule ncbi_homo_spaiens_rrna:
+    params:
+        url = 'https://www.ncbi.nlm.nih.gov/nuccore/555853',
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(EXT_DIR, 'ncbi', 'homo_sapiens', 'fasta', 'rrna.fa')
+    log:
+        join(EXT_DIR, 'ncbi', 'homo_sapiens', 'logs', 'rrna.log')
     singularity:
         'docker://flatberg/entrez-direct:10.2'
     shell:
-        'efetch -db nuccore -id U13369.1 -format fasta > {output}'
+        """
+        efetch -db nuccore -id U13369.1 -format fasta > {output}
+        echo "ncbi nucore,U13369.1,{params.url},{params.date}" > {log}
+        """
 
 rule ncbi_mus_musculus_rrna:
+    params:
+        url = 'https://www.ncbi.nlm.nih.gov/nuccore/bk000964.3',
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(EXT_DIR, 'ncbi', 'mus_musculus', 'fasta', 'rrna.fa')
+    log:
+        join(EXT_DIR, 'ncbi', 'mus_musculus', 'logs', 'rrna.log')
     singularity:
         'docker://flatberg/entrez-direct:10.2'
     shell:
-        'efetch -db nuccore -id bk000964.3 -format fasta > {output}'
-
+        """
+        efetch -db nuccore -id bk000964.3 -format fasta > {output}
+        echo "ncbi nucore,bk000964.3,{params.url},{params.date}" > {log}
+        """
+rule ncbi_all:
+    input:
+        join(EXT_DIR, 'ncbi', 'homo_sapiens', 'fasta', 'rrna.fa'),
+        join(EXT_DIR, 'ncbi', 'mus_musculus', 'fasta', 'rrna.fa')

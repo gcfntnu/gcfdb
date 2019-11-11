@@ -24,8 +24,10 @@ rule quickmirseq_mirbase_index:
     output:
         join(QMSQ_EXT, 'mirna_0_0.fa')
     log:
-       join(QMSQ_EXT, 'QuickMIRSeq-build.log')
+       build_log = join(QMSQ_EXT, 'QuickMIRSeq-build.log'),
+       db = join(QMSQ_EXT, 'logs', 'quickmirseq.mirbase.log')
     shell:
+                 
         'perl $QuickMIRSeq/QuickMIRSeq-build.pl '
         '--target {params.index} '
         '--mirna {input.mature} '
@@ -89,15 +91,8 @@ rule quickmirseq_genome_index:
     shell:
         'bowtie-build {input.genome} {params.index_base} '
         '&& cp {input.noncoding} {output[0]} '
-
-rule quickmirseq_download:
-    input:
-        expand(rules.quickmirseq_mirbase_index.input, org=config['organism']),
-        expand(rules.quickmirseq_smallrna_index.input, org=config['organism']),
-        expand(rules.quickmirseq_mrna_index.input, org=config['organism'])
-        #expand(rules.quickmirseq_genome_index.input, org=config['organism'])
         
-rule quickmirseq_build_db:
+rule quickmirseq_db_all:
     input:
         join(EXT_DIR, 'quickmirseq', config['organism'], 'mirna_0_0.fa'),
         join(EXT_DIR, 'quickmirseq', config['organism'], 'smallRNA.fa'),

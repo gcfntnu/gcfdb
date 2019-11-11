@@ -1,8 +1,11 @@
 #-*- mode:snakemake -*-
+"""
+piwi-interacting RNA (piRNAdb)
+"""
+PB_VERSION = config['db'].get('pirbase', {}).get('version', '2.0')
+PDB_VERSION = config['db'].get('pirnadb', {}).get('version', '1_7_6')
 
-RTR_VERSION = config['db'].get('regulatoryrna', {}).get('version', '2.0')
-
-RTR_ORG = {'homo_sapiens': 'hsa',
+MAP_ORG = {'homo_sapiens': 'hsa',
            'human': 'hsa',
            'hsa': 'hsa',
            'mus_musculus': 'mmu',
@@ -12,21 +15,41 @@ RTR_ORG = {'homo_sapiens': 'hsa',
            'rat': 'rno',
            'rno': 'rno'}
 
-rule pirna_regulatoryrna_fasta:
+
+URLS = {'rtr': 'http://www.regulatoryrna.org/database/piRNA/download/archive/v{}/fasta/{}.fa.gz',
+       'pirnabank': 'http://pirnabank.ibab.ac.in/downloads/all/human_all.zip',
+       'pirnadb': 'https://www.pirnadb.org/download/downloadarchive/pirna/piRNAdb.{}.v{}.fa.gz'
+       }
+
+rule pirbase_fasta:
     params:
-        url = 'http://www.regulatoryrna.org/database/piRNA/download/archive/v{}/fasta'.format(RTR_VERSION),
-        rtr_org = lambda wildcards: RTR_ORG[wildcards.org]
+        url = URLS['rtr'].format(PB_VERSION, MAP_ORG[ORG]),
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
-        'data/ext/regulatoryrna/{org}/fasta/pirna.fa'
+        join(EXT_DIR, 'pirbase', ORG, 'fasta', 'pirna.fa')
+    log:
+        join(EXT_DIR, 'pirbase', ORG, 'logs', 'pirbase.log')
     shell:
-        'wget -O- {params.url}/{params.rtr_org}.fa.gz | gunzip -C > {output}'
+        """
+        wget -O- {params.url} | gunzip -c > {output}
+        echo "piRBase,{PB_VERSION},{params.url},{params.date}" > {log}
+        """
+
+rule pirnadb_fasta:
+    params:
+        url = URLS['pirnadb'].format(MAP_ORG[ORG], PDB_VERSION),
+        date = datetime.now().strftime("%d-%m-%Y")
+    output:
+        join(EXT_DIR, 'pirnadb', ORG, 'fasta', 'pirna.fa')
+    log:
+        join(EXT_DIR, 'pirnadb', ORG, 'logs', 'pirnadb.log')
+    shell:
+        """
+        wget -O- {params.url} | gunzip -c > {output}
+        echo "piRNAdb,{PDB_VERSION},{params.url},{params.date}" > {log}
+        """
         
-rule pirnabank_fasta:
-    params:
-        url = 'http://pirnabank.ibab.ac.in/downloads/all/human_all.zip'
-    output:
-        'data/ext/pirnabank/homo_sapiens/fasta/pirna.fa'
-    shell:
-        """
-        wget {params.url} -O- | zcat | sed 's/U/T/g' > {output}
-        """
+rule pirna_db_all:
+    input:
+       join(EXT_DIR, 'pirbase', ORG, 'fasta', 'pirna.fa'),
+       join(EXT_DIR, 'pirnadb', ORG, 'fasta', 'pirna.fa')

@@ -30,11 +30,24 @@ rule ercc_gtf:
     input:
         rules.ercc_files.output.ercc_gtf
     output:
-        join(EXT_DIR, 'ERCC92.custom.gtf')
+        join(ERCC_DIR, 'ERCC92.fix.gtf')
     params:
-        script = srcdir('scripts/fix_ercc_gtf.py'),
-        args = '--exon2gene ' if config['db'].get('ercc2gene', False) else ''
+        script = srcdir('scripts/fix_ercc_gtf.py')
     shell:
-        '{params.script} {input} {params.args} > {output}'
+        'python {params.script} {input} > {output}'
 
-    
+rule ercc_gtf_gene:
+    input:
+        rules.ercc_files.output.ercc_gtf
+    output:
+        join(ERCC_DIR, 'ERCC92.gene.gtf')
+    params:
+        script = srcdir('scripts/fix_ercc_gtf.py')
+    shell:
+        'python {params.script} {input} --exon2gene > {output}'    
+
+rule ercc_all:
+    input:
+        join(ERCC_DIR, 'ERCC92.fa'),
+        join(ERCC_DIR, 'ERCC92.fix.gtf'),
+        join(ERCC_DIR, 'ERCC92.gene.gtf')
