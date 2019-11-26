@@ -18,8 +18,7 @@ rule star_genome_index_gtf:
         genome = join('{ref_dir}', 'fasta', '{prefix}.fa'),
         gtf = join('{ref_dir}', 'genes', 'genes.gtf')
     output:
-        index = join('{ref_dir}', 'index', '{prefix}', 'star', 'r_{sjdbOverhang}', 'SA'),
-        log = join('{ref_dir}', 'logs', 'STAR.{prefix}_r_{sjdbOverhang}.index.log')
+        index = join('{ref_dir}', 'index', '{prefix}', 'star', 'r_{sjdbOverhang}', 'SA')
     params:
         index_dir =  join('{ref_dir}', 'index', '{prefix}', 'star', 'r_{sjdbOverhang}'),
         sjdbOverhang = '{sjdbOverhang}'
@@ -27,8 +26,7 @@ rule star_genome_index_gtf:
         48
     singularity:
         'docker://' + config['docker']['star']
-    shadow:
-        'minimal'
+
     shell:
         'STAR '
         '--runThreadN {threads} '
@@ -37,7 +35,6 @@ rule star_genome_index_gtf:
         '--genomeFastaFiles {input.genome} '
         '--sjdbGTFfile {input.gtf} '
         '--sjdbOverhang {params.sjdbOverhang} '
-        '&& mv Log.final.out {output.log} '
         
 rule hisat2_genome_index:
     input:
@@ -157,7 +154,7 @@ rule salmon_index:
     input:
         join('{ref_dir}', 'fasta', '{prefix}.fa')
     output:
-        join('{ref_dir}', 'index', '{prefix}', 'salmon', 'refInfo.json')
+        join('{ref_dir}', 'index', '{prefix}', 'salmon', 'info.json')
     params:
         out = join('{ref_dir}', 'index', '{prefix}', 'salmon')
     threads:

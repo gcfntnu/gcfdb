@@ -7,7 +7,6 @@ https://github.com/aertslab/pySCENIC
 """
 ORG = config['organism']
 assert(ORG in ['homo_sapiens', 'mus_musculus'])
-PYSCENIC_EXT = join(EXT_DIR, 'pyscenic', ORG)
 
 ASSEMBLY_MAP = {'GRCh38': 'hg38', 'GRCh37': 'hg19', 'GRCm38': 'mm10', 'GRCm37': 'mm9'}
 
@@ -27,40 +26,54 @@ if ASSEMBLY is None:
         ASSEMBLY = 'GRCh38'
     elif ORG == 'mus_musculus':
         ASSEMBLY = 'GRCm38'
-ASSEMBLY = ASSEMBLY_MAP[ASSEMBLY]
+P_ASSEMBLY = ASSEMBLY_MAP[ASSEMBLY]
 MOTIF2TF_URL = MOTIF2TF_MAP[ORG]
-CIS_DB_URL = CIS_DB_MAP[ORG].format(ASSEMBLY, ASSEMBLY)
+CIS_DB_URL = CIS_DB_MAP[ORG].format(P_ASSEMBLY, P_ASSEMBLY)
 TF_URL = TF_MAP[ORG]
+
+PYSCENIC_EXT = join(EXT_DIR, 'pyscenic', ORG, ASSEMBLY)
 
 rule pyscenic_tf:
     params:
-        url = TF_URL
+        url = TF_URL,
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(PYSCENIC_EXT, 'tfs.txt')
     log:
-        join(PYSCENIC_EXT, 'tfs.log')
+        join(PYSCENIC_EXT, 'logs', 'tfs.log')
     shell:
-        'wget -O - {params.url} -o {log} > {output}'
+        """
+        wget -O - {params.url} > {output}
+        echo "Pyscenic,TF,{params.url},{params.date}" > {log}
+        """
 
 rule pyscenic_motif_db:
     output:
         join(PYSCENIC_EXT, 'motifs.tbl')
     params:
-        url = MOTIF2TF_URL
+        url = MOTIF2TF_URL,
+        date = datetime.now().strftime("%d-%m-%Y")
     log:
-       join(PYSCENIC_EXT, 'motifs.log') 
+       join(PYSCENIC_EXT, 'logs', 'motifs.log') 
     shell:
-        'wget -O - {params.url} -o {log} > {output}'
+        """
+        wget -O - {params.url} -o {log} > {output}
+        echo "Pyscenic,Motifs,{params.url},{params.date}" > {log}
+        """
     
 rule pyscenic_cis_db:
     output:
         join(PYSCENIC_EXT, 'tss.feather')
     params:
-        url = CIS_DB_URL
+        url = CIS_DB_URL,
+        date = datetime.now().strftime("%d-%m-%Y")
     log:
-       join(PYSCENIC_EXT, 'tss.log') 
+       join(PYSCENIC_EXT, 'logs', 'tss.log') 
     shell:
-        'wget -O - {params.url} -o {log} > {output}'
+        """
+        wget -O - {params.url} -o {log} > {output}
+        echo "Pyscenic,Cis,{params.url},{params.date}" > {log}
+        """
 
 rule pyscenic_db_all:
     input:
