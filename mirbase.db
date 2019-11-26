@@ -9,6 +9,7 @@ if os.path.exists(extra_conf_fn):
         update_config2(config, c)
         
 MIRBASE_RELEASE = str(config['db']['mirbase'].get('release', '22'))
+config['db']['mirbase']['release'] = MIRBASE_RELEASE
 ORG = config.get('organism', 'homo_sapiens')
 MIR_ORG = {'homo_sapiens': 'hsa',
            'human': 'hsa',
@@ -20,7 +21,7 @@ MIR_ORG = {'homo_sapiens': 'hsa',
            'rat': 'rno',
            'rno': 'rno'}
 
-MIRBASE_EXT = join(EXT_DIR, 'mirbase', ORG, MIRBASE_RELEASE)
+MIRBASE_EXT = join(EXT_DIR, 'mirbase', ORG, 'release-{}'.format(MIRBASE_RELEASE))
 
 URLS = {'hairpin': 'ftp://mirbase.org/pub/mirbase/{}/hairpin.fa.gz'.format(MIRBASE_RELEASE),
         'mature': 'ftp://mirbase.org/pub/mirbase/{}/mature.fa.gz'.format(MIRBASE_RELEASE),
@@ -73,7 +74,7 @@ rule mirbase_gff:
         echo "Mirbase gff,{MIRBASE_RELEASE},{params.url},{params.date}" > {log}
         """
             
-rule mirbase_all:
+rule mirbase_db_all:
     input:
         join(MIRBASE_EXT, 'fasta', 'hairpin.fa'),
         join(MIRBASE_EXT, 'fasta', 'mature.fa'),

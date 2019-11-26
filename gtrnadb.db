@@ -20,6 +20,14 @@ GTRNADB_NAME = {'homo_sapiens': 'Hsapi',
                 'rattus_norvegicus': 'Rnorv',
                 'rat': 'Rnorv'}
 
+GTRNADB_CONF = config['db'].get('gtrnadb')
+if GTRNADB_CONF is None:
+    GTRNADB_CONF = config['db']['gtrnadb'] = {}
+GTRNADB_VERSION = config['db']['gtrnadb'].get('version')
+if GTRNADB_VERSION is None:
+    GTRNADB_VERSION = config['db']['gtrnadb']['version'] = GTRNADB_VER[ORG]
+
+
 def gtrnadb_url(wildcards):
     org = GTRNADB_ORG[ORG]
     name = GTRNADB_NAME[ORG]
@@ -33,9 +41,9 @@ rule gtrnadb_trna:
         date = datetime.now().strftime("%d-%m-%Y"),
         version = GTRNADB_VER[ORG]
     output:
-        join(EXT_DIR, 'gtrnadb', ORG, 'tRNAs.fa')
+        join(EXT_DIR, 'gtrnadb', ORG, 'release-{}'.format(GTRNADB_VER[ORG]), 'tRNAs.fa')
     log:
-        join(EXT_DIR, 'gtrnadb', ORG, 'logs', 'gtrnadb.log')
+        join(EXT_DIR, 'gtrnadb', ORG, 'release-{}'.format(GTRNADB_VER[ORG]), 'logs', 'gtrnadb.log')
     shell:
         """
         wget -O {output} {params.url}

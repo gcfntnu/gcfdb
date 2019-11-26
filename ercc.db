@@ -7,15 +7,18 @@ from os.path import join
 
 ERCC_DIR = join(EXT_DIR, 'ERCC')
 
+include:
+    'indexes.rules'
+    
 rule ercc_files:
     params:
         url = 'https://tools.thermofisher.com/content/sfs/manuals/ERCC92.zip',
         date = datetime.now().strftime("%d-%m-%Y")
     output:
-        ercc_gtf = join(ERCC_DIR, 'ERCC92.gtf'),
-        ercc_fasta = join(ERCC_DIR, 'ERCC92.fa')
+        ercc_gtf = join(ERCC_DIR, 'genes', 'ERCC92.gtf'),
+        ercc_fasta = join(ERCC_DIR, 'fasta', 'ERCC92.fa')
     log:
-       join(ERCC_DIR, 'ERCC92.log') 
+       join(ERCC_DIR, 'logs', 'ERCC92.log') 
     shell:
         """
         wget {params.url}
@@ -30,7 +33,7 @@ rule ercc_gtf:
     input:
         rules.ercc_files.output.ercc_gtf
     output:
-        join(ERCC_DIR, 'ERCC92.fix.gtf')
+        join(ERCC_DIR, 'genes', 'ERCC92.fix.gtf')
     params:
         script = srcdir('scripts/fix_ercc_gtf.py')
     shell:
@@ -40,14 +43,16 @@ rule ercc_gtf_gene:
     input:
         rules.ercc_files.output.ercc_gtf
     output:
-        join(ERCC_DIR, 'ERCC92.gene.gtf')
+        join(ERCC_DIR, 'genes', 'ERCC92.gene.gtf')
     params:
         script = srcdir('scripts/fix_ercc_gtf.py')
     shell:
         'python {params.script} {input} --exon2gene > {output}'    
 
-rule ercc_all:
+rule ercc_db_all:
     input:
-        join(ERCC_DIR, 'ERCC92.fa'),
-        join(ERCC_DIR, 'ERCC92.fix.gtf'),
-        join(ERCC_DIR, 'ERCC92.gene.gtf')
+        join(ERCC_DIR, 'fasta', 'ERCC92.fa'),
+        join(ERCC_DIR, 'genes', 'ERCC92.fix.gtf'),
+        join(ERCC_DIR, 'genes', 'ERCC92.gene.gtf'),
+        join(ERCC_DIR, 'index', 'ERCC92', 'bowtie', 'ERCC92.1.ebwt'),
+        join(ERCC_DIR, 'index', 'ERCC92', 'bowtie2', 'ERCC92.1.bt2')

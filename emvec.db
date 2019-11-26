@@ -33,3 +33,8 @@ rule contaminants_emvec_anno:
         """
         grep '>' {input} | sed 's/ /\t/' > {output}
         """
+        
+rule emvec_db_all:
+    input:
+        join(EXT_DIR, 'emvec', 'index', 'emvec', 'bowtie', 'emvec.1.ebwt'),
+        join(EXT_DIR, 'emvec', 'index', 'emvec', 'bowtie2', 'emvec.1.bt2'),

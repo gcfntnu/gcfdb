@@ -33,7 +33,12 @@ rule ncbi_mus_musculus_rrna:
         efetch -db nuccore -id bk000964.3 -format fasta > {output}
         echo "ncbi nucore,bk000964.3,{params.url},{params.date}" > {log}
         """
-rule ncbi_all:
+
+rule ncbi_db_all:
     input:
         join(EXT_DIR, 'ncbi', 'homo_sapiens', 'fasta', 'rrna.fa'),
-        join(EXT_DIR, 'ncbi', 'mus_musculus', 'fasta', 'rrna.fa')
+        join(EXT_DIR, 'ncbi', 'mus_musculus', 'fasta', 'rrna.fa'),
+        join(EXT_DIR, 'ncbi', 'homo_sapiens', 'index', 'rrna', 'bowtie', 'rrna.1.ebwt'),
+        join(EXT_DIR, 'ncbi', 'mus_musculus', 'index', 'rrna', 'bowtie', 'rrna.1.ebwt'),
+        join(EXT_DIR, 'ncbi', 'homo_sapiens', 'index', 'rrna', 'bowtie2', 'rrna.1.bt2'),
+        join(EXT_DIR, 'ncbi', 'mus_musculus', 'index', 'rrna', 'bowtie2', 'rrna.1.bt2')

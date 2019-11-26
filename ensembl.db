@@ -78,8 +78,8 @@ def ensembl_search(org, strain=None, assembly=None):
 
 DB_CONF = config['db']['ensembl']
 ORG = config.get('organism', 'homo_sapiens')
-STRAIN = config.get('strain')
-ASSEMBLY = DB_CONF.get('assembly')
+STRAIN = config.get('strain', DB_CONF.get('strain'))
+ASSEMBLY = config.get('assembly', DB_CONF.get('assembly'))
 if '__' in ORG:
     raise ValueError('Multispecies genome is not supported for Ensembl!')
 
@@ -87,21 +87,27 @@ SPECIES = ensembl_search(ORG, STRAIN, ASSEMBLY)
 if ORG != SPECIES['name']:
     config['organism'] = ORG = SPECIES['name']
 if STRAIN != SPECIES['strain']:
-    config['strain'] = STRAIN = SPECIES['strain']
+    STRAIN = config['strain'] = DB_CONF['strain'] = SPECIES['strain']
 ENS_RELEASE = str(DB_CONF.get('release', SPECIES['release']))
-ENS_ASSEMBLY = DB_CONF['assembly'] = SPECIES['assembly']
+ENS_ASSEMBLY = config['assembly'] = DB_CONF['assembly'] = SPECIES['assembly']
 if ORG == 'homo_sapiens':
     ENS_NAME = '' if ENS_ASSEMBLY == 'GRCh38' else '/grch37'
+    ENS_RELEASE = ENS_RELEASE if ENS_ASSEMBLY == 'GRCh38' else '87'
+    DB_CONF['release'] = ENS_RELEASE
 else:
     ENS_NAME = ''
 
 ERCC = DB_CONF.get('add_ercc', False)
-OUTDIR = join(EXT_DIR, 'ensembl', ORG, ENS_ASSEMBLY)
+OUTDIR = join(EXT_DIR, 'ensembl', ORG, 'release-{}'.format(ENS_RELEASE), ENS_ASSEMBLY)
 
 # includes
 if ERCC:
     include:
         'ercc.db'
+include:
+    'convert.rules'
+include:
+    'indexes.rules'
 
 _genome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/dna/{}.{}.dna.primary_assembly.fa.gz'
 _gtf = 'ftp.ensembl.org/pub{}/release-{}/gtf/{}/{}.{}.{}.gtf.gz'
@@ -124,11 +130,11 @@ rule ensembl_dna:
     threads: 
         8
     log:
-        'logs/ensembl.dna.log'
+        join(OUTDIR, 'logs', 'ensembl.dna.log')
     shell: 
         """
         zcat {input} > {output}
-        echo 'Ensembl DNA,{ENS_GENOME},{params.date}' >> {log}
+        echo 'Ensembl DNA,ENS_RELEASE,{ENS_GENOME},{params.date}' > {log}
         """
         
 rule ensembl_cdna:
@@ -141,11 +147,11 @@ rule ensembl_cdna:
     threads: 
         8
     log:
-        'logs/ensembl.cdna.log'
+        join(OUTDIR, 'logs', 'ensembl.cdna.log')
     shell: 
         """
         zcat {input} > {output}
-        echo 'Ensembl CDNA,{ENS_TRANSCRIPTOME},{params.date}' >> {log}
+        echo 'Ensembl CDNA,ENS_RELEASE,{ENS_TRANSCRIPTOME},{params.date}' > {log}
         """
         
 rule ensembl_noncoding:
@@ -158,11 +164,11 @@ rule ensembl_noncoding:
     threads: 
         8
     log:
-        'logs/ensembl.noncoding.log'
+        join(OUTDIR, 'logs', 'ensembl.noncoding.log')
     shell: 
         """
         zcat {input} > {output}
-        echo 'Ensembl NCDNA,{ENS_NONCODING},{params.date}' >> {log}
+        echo 'Ensembl NCDNA,ENS_RELEASE,{ENS_NONCODING},{params.date}' > {log}
         """
 
 rule ensembl_gtf:
@@ -175,11 +181,11 @@ rule ensembl_gtf:
     threads: 
         8
     log:
-        'logs/ensembl.gtf.log'
+        join(OUTDIR, 'logs', 'ensembl.gtf.log')
     shell: 
         """
         zcat {input} > {output}
-        echo 'Ensembl GTF,{ENS_GTF},{params.date}' >> {log}
+        echo 'Ensembl GTF,ENS_RELEASE,{ENS_GTF},{params.date}' > {log}
         """
         
 rule ensembl_addercc2genome:
@@ -270,3 +276,22 @@ rule ensembl_db_downloads:
         ln -sr {input.noncoding} {output.noncoding}
         ln -sr {input.genome_index} {output.genome_index}
         """
+        
+rule ensembl_db_all:
+    input:
+        join(OUTDIR, 'fasta', 'genome.fa'),
+        join(OUTDIR, 'fasta', 'cdna.fa'),
+        join(OUTDIR, 'genes', 'genes.gtf'),
+        join(OUTDIR, 'fasta', 'ncdna.fa'),
+        join(OUTDIR, 'fasta', 'genome.fa.fai'),    
+        join(OUTDIR, 'genes', 'genes.tsv'),
+        join(OUTDIR, 'genes', 'transcripts.tsv'),
+        join(OUTDIR, 'genes', 'tx2gene.tsv'),
+        join(OUTDIR, 'fasta', 'genome.dict'),
+        join(OUTDIR, 'genes', 'genes.bed12'),
+        join(OUTDIR, 'genes', 'genes.refflat.gz'),
+        join(OUTDIR, 'fasta', 'gtf.gffread.transcripts.fa'),
+        join(OUTDIR, 'fasta', 'gtf.rsem.transcripts.fa'),
+        join(OUTDIR, 'index', 'genome', 'star', 'r_99', 'SA'),
+        join(OUTDIR, 'index', 'gtf.rsem.transcripts', 'salmon', 'refInfo.json'),
+        join(OUTDIR, 'index', 'gentrome', 'salmon', 'info.json')

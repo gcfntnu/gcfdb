@@ -11,10 +11,7 @@ from os.path import join
 import yaml
 from datetime import datetime
 
-from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 from snakemake.logging import logger
-
-HTTP = HTTPRemoteProvider()
 
 
 # config
@@ -26,7 +23,6 @@ if os.path.exists(extra_conf_fn):
 
 GC_ORG_MAP = {'homo_sapiens':  'human',
               'mus_musculus': 'mouse'}
-
 
 ORG = config.get('organism', 'homo_sapiens')
 if '__' in ORG:
@@ -42,15 +38,19 @@ if ORG == 'homo_sapiens':
     GENCODE_ASSEMBLY = 'GRCh37' if int(GENCODE_RELEASE) <= 19 else 'GRCh38'
 else:
     GENCODE_ASSEMBLY = 'NCBIM37' if GENCODE_RELEASE == 'M1' else 'GRCm38'
-DB_CONF['assembly'] = GENCODE_ASSEMBLY
+config['assembly'] = DB_CONF['assembly'] = GENCODE_ASSEMBLY
 TRANSCRIPTOME_TYPE = DB_CONF.get('transcriptome_type', 'pc_') #['pc_','']
 ERCC = DB_CONF.get('add_ercc', False)
-OUTDIR = join(EXT_DIR, 'gencode', ORG, GENCODE_ASSEMBLY)
+OUTDIR = join(EXT_DIR, 'gencode', ORG, 'release-{}'.format(GENCODE_RELEASE), GENCODE_ASSEMBLY)
 
 # includes
 if ERCC:
     include:
         'ercc.db'
+include:
+    'convert.rules'
+include:
+    'indexes.rules'
 
 # GENCODE URLS
 GENCODE_GENOME = 'http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_{}/release_{}/{}.primary_assembly.genome.fa.gz'
@@ -72,73 +72,85 @@ GENCODE_POLYA_GTF = GENCODE_POLYA_GTF.format(GENCODE_ORG, GENCODE_RELEASE, GENCO
 
 
 rule gencode_dna:
-    input:
-        HTTP.remote(GENCODE_GENOME)
-    params: 
+    params:
+        url = GENCODE_GENOME,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, GENCODE_GENOME.replace('http://', '').split('.gz')[0])
     threads: 
         8
     log:
-        'logs/gencode.dna.log'
+        join(OUTDIR, 'logs', 'gencode.dna.log')
     shell: 
         """
-        zcat {input} > {output}
-        echo 'Gencode DNA,{GENCODE_GENOME},{params.date}' >> {log}
+        wget -O- {params.url} | gunzip -c  > {output}
+        echo 'Gencode DNA,{GENCODE_GENOME},{params.date}' > {log}
         """
         
 rule gencode_cdna:
-    input:
-        HTTP.remote(GENCODE_TRANSCRIPTOME)
     params: 
-        date = datetime.now().strftime("%d-%m-%Y")
+        date = datetime.now().strftime("%d-%m-%Y"),
+        url = GENCODE_TRANSCRIPTOME
     output:
         join(OUTDIR, GENCODE_TRANSCRIPTOME.replace('http://', '').split('.gz')[0])
     threads: 
         8
     log:
-        'logs/gencode.cdna.log'
+        join(OUTDIR, 'logs', 'gencode.cdna.log')
     shell: 
         """
-        zcat {input} > {output}
-        echo 'Gencode CDNA,{GENCODE_TRANSCRIPTOME},{params.date}' >> {log}
+        wget {params.url} -O- | gunzip -c  > {output}
+        echo "Gencode CDNA,{GENCODE_TRANSCRIPTOME},{params.date}" > {log}
         """
-        
+
 rule gencode_noncoding:
-    input:
-        HTTP.remote(GENCODE_LNC)
-    params: 
+    params:
+        url = GENCODE_LNC,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, GENCODE_LNC.replace('http://', '').split('.gz')[0])
     threads: 
         8
     log:
-        'logs/gencode.noncoding.log'
+        join(OUTDIR, 'logs', 'gencode.noncoding.log')
     shell: 
         """
-        zcat {input} > {output}
-        echo 'Gencode NCDNA,{GENCODE_LNC},{params.date}' >> {log}
+        wget {params.url} -O- | gunzip -c  > {output}
+        echo 'Gencode NCDNA,{GENCODE_LNC},{params.date}' > {log}
         """
 
 rule gencode_gtf:
-    input:
-        HTTP.remote(GENCODE_GTF)
-    params: 
+    params:
+        url = GENCODE_GTF,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, GENCODE_GTF.replace('http://', '').split('.gz')[0])
     threads: 
         8
     log:
-        'logs/gencode.gtf.log'
+        join(OUTDIR, 'logs', 'gencode.gtf.log')
     shell: 
         """
-        zcat {input} > {output}
-        echo 'Gencode GTF,{GENCODE_GTF},{params.date}' >> {log}
+        wget {params.url} -O- | gunzip -c > {output}
+        echo 'Gencode GTF,{GENCODE_GTF},{params.date}' > {log}
         """
         
+rule gencode_trna_gtf:
+    params:
+        url = GENCODE_PREDTRNA_GTF,
+        date = datetime.now().strftime("%d-%m-%Y")
+    output:
+        join(OUTDIR, GENCODE_PREDTRNA_GTF.replace('http://', '').split('.gz')[0])
+    threads: 
+        8
+    log:
+        join(OUTDIR, 'logs', 'gencode.trna.gtf.log')
+    shell: 
+        """
+        wget {params.url} -O- | gunzip -c > {output}
+        echo 'Gencode GTF,{GENCODE_PREDTRNA_GTF},{params.date}' > {log}
+        """
+
 rule gencode_addercc2genome:
     input:
         rules.gencode_dna.output,
@@ -205,6 +217,19 @@ rule gencode_add_ercc2cdna_gtf:
         rules.gencode_cdna.output[0].split('.fa')[0] + '.ERCC92.fa'
     shell:
         'cat {input} > {output}'
+
+rule gencode_trna:
+    input:
+        gtf = rules.gencode_trna_gtf.output,
+        genome = rules.gencode_dna.output
+    params:
+        base = join(OUTDIR, 'fasta', 'gtf.trna')
+    singularity:
+        'docker://quay.io/biocontainers/rsem:1.3.2--pl526ha52163a_1'
+    output:
+         join(OUTDIR, 'fasta', 'gtf.trna.transcripts.fa')
+    shell:
+        'rsem-prepare-reference --gtf {input.gtf} {input.genome} {params.base}'
         
 rule gencode_db_downloads:
     input:
@@ -227,3 +252,22 @@ rule gencode_db_downloads:
         ln -sr {input.noncoding} {output.noncoding}
         ln -sr {input.genome_index} {output.genome_index}
         """
+
+rule gencode_db_all:
+    input:
+        join(OUTDIR, 'fasta', 'genome.fa'),
+        join(OUTDIR, 'fasta', 'cdna.fa'),
+        join(OUTDIR, 'genes', 'genes.gtf'),
+        join(OUTDIR, 'fasta', 'ncdna.fa'),
+        join(OUTDIR, 'fasta', 'genome.fa.fai'),    
+        join(OUTDIR, 'genes', 'genes.tsv'),
+        join(OUTDIR, 'genes', 'transcripts.tsv'),
+        join(OUTDIR, 'genes', 'tx2gene.tsv'),
+        join(OUTDIR, 'fasta', 'genome.dict'),
+        join(OUTDIR, 'genes', 'genes.bed12'),
+        join(OUTDIR, 'genes', 'genes.refflat.gz'),
+        join(OUTDIR, 'fasta', 'gtf.gffread.transcripts.fa'),
+        join(OUTDIR, 'fasta', 'gtf.rsem.transcripts.fa'),
+        join(OUTDIR, 'index', 'gtf.rsem.transcripts', 'salmon', 'refInfo.json'),
+        join(OUTDIR, 'index', 'gentrome', 'salmon', 'info.json'),
+        join(OUTDIR, 'index', 'genome', 'star', 'r_99', 'SA')

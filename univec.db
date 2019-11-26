@@ -37,7 +37,7 @@ rule contaminants_univec_fasta:
     output:
         join(EXT_DIR, 'univec', 'fasta', 'univec.fa')
     log:
-        join(EXT_DIR, 'univec', 'univec.log')
+        join(EXT_DIR, 'univec', 'logs', 'univec.log')
     shell:
         """
         wget {params.url_core} -O- > {output}
@@ -53,3 +53,8 @@ rule univec_anno:
         """
         grep '>' {input} | sed 's/ /\t/' > {output}
         """
+
+rule univec_db_all:
+    input:
+        join(EXT_DIR, 'univec', 'index', 'univec', 'bowtie', 'univec.1.ebwt'),
+        join(EXT_DIR, 'univec', 'index', 'univec', 'bowtie2', 'univec.1.bt2'),

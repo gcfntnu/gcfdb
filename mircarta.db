@@ -7,7 +7,8 @@ if os.path.exists(extra_conf_fn):
         c  = yaml.load(fh) or {}
         update_config2(config, c)
         
-MIRCARTA_RELEASE = str(config['db'].get('mircarta', {}).get('release', '1.1'))
+MIRCARTA_RELEASE = str(config['db']['mircarta'].get('release', '1.1'))
+config['db']['mircarta']['release'] = MIRCARTA_RELEASE
 ORG = config.get('organism', 'homo_sapiens')
 MIR_ORG = {'homo_sapiens': 'hsa',
            'human': 'hsa',
@@ -20,7 +21,7 @@ MIR_ORG = {'homo_sapiens': 'hsa',
            'rno': 'rno'}
 
 MIRCARTA_URL = 'https://mircarta.cs.uni-saarland.de/mircarta/static/downloads/{}'.format(MIRCARTA_RELEASE)
-MIRCARTA_EXT = join(EXT_DIR, 'mircarta', ORG, MIRCARTA_RELEASE)
+MIRCARTA_EXT = join(EXT_DIR, 'mircarta', ORG, 'release-{}'.format(MIRCARTA_RELEASE))
 
 
 rule mircarta_hairpin_fasta:
@@ -65,7 +66,7 @@ rule mircarta_gff:
         echo "Mircarta gff,{MIRCARTA_RELEASE},{params.url},{params.date}" > {log}
         """
 
-rule mircarta_all:
+rule mircarta_db_all:
     input:
         join(MIRCARTA_EXT, 'fasta', 'hairpin.fa'),
         join(MIRCARTA_EXT, 'fasta', 'mature.fa'),

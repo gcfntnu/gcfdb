@@ -1,6 +1,14 @@
-include:
+#-*- mode:snakemake -*-
+include:	    
   'JGI.db'
 include:
   'emvec.db'
 include:
   'univec.db'
+
+rule contaminants_db_all:
+    input:
+        join(EXT_DIR, 'univec', 'fasta', 'univec.fa'),
+        join(EXT_DIR, 'univec', 'anno.tsv'),
+        join(EXT_DIR, 'emvec', 'fasta', 'emvec.fa'),
+        join(EXT_DIR, 'emvec', 'anno.tsv')

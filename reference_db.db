@@ -26,10 +26,11 @@ elif 'reference_db' in config['db']:
         include: '10xgenomics.db'    
 
     DB_CONF = config['db'][ref]
-    REF_DIR = join(EXT_DIR, ref, ORG, DB_CONF['assembly'])
+    REF_DIR = join(EXT_DIR, ref, ORG, 'release-{}'.format(DB_CONF['release']), DB_CONF['assembly'])
 else:
     logger.error('Reference dir missing. Check config or other ways for ref dir setup')
     raise ValueError
+config['ref_dir'] = REF_DIR
 
 include:
     'convert.rules'

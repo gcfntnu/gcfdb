@@ -44,7 +44,7 @@ rule jgi_ribokmers:
         url = 'http://portal.nersc.gov/dna/microbial/assembly/bushnell/riboKmers.fa.gz',
         date = datetime.now().strftime("%d-%m-%Y")
     output:
-        join(EXT_DIR, 'JGI', 'rrna', 'ribokmers.fa.gz')
+        join(EXT_DIR, 'JGI', 'fasta', 'ribokmers.fa.gz')
     log:
        join(EXT_DIR, 'JGI', 'logs', 'ribokmers.log')     
     shell:

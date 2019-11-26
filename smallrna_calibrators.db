@@ -9,7 +9,11 @@ CAL_DIR = join(EXT_DIR, 'smallrna_calibrators')
     
 rule calibrators_fasta:
     output:
-        join(CAL_DIR, 'calibrators.fa')
+        join(CAL_DIR, 'fasta', 'calibrators.fa')
+    log:
+       join(CAL_DIR, 'logs', 'calibrators.log')
+    params:
+        date = datetime.now().strftime("%d-%m-%Y")
     shell:
         """
         echo ">spikeIn|Cal01 spikeIn 01" >> {output}
@@ -32,12 +36,15 @@ rule calibrators_fasta:
         echo AAAGUAGCAUCCGAAAUACGGA >> {output}
         echo ">spikeIn|Cal10 spikeIn 10" >> {output}
         echo UGAUACGGAUGUUAUACGCAGC >> {output}
+        
+        echo "SmallRNA Calibrators,NA,NA,{params.date}"
         """
+        
 rule calibrators_to_dna:
     input:
         rules.calibrators_fasta.output
     output:
-        join(CAL_DIR, 'calibrators.dna.fa')
+        join(CAL_DIR, 'fasta', 'calibrators.dna.fa')
     message:
         'Converting RNA alphabet to DNA for calibrators'
     shell:
@@ -49,8 +56,17 @@ rule calibrators_extend:
     input:
         rules.calibrators_to_dna.output
     output:
-        join(CAL_DIR, 'calibrators.dna.extended.fa')
+        join(CAL_DIR, 'fasta', 'calibrators.dna.extended.fa')
     params:
         script = srcdir('scripts/extend_calibrators.py')
     shell:
         'python {params.script} {input} {output}'
+
+rule calibrators_db_all:
+    input:
+       join(CAL_DIR, 'fasta', 'calibrators.dna.fa'),
+       join(CAL_DIR, 'fasta', 'calibrators.dna.extended.fa'),
+       join(CAL_DIR, 'index', 'calibrators.dna', 'bowtie', 'calibrators.dna.1.ebwt'),
+       join(CAL_DIR, 'index', 'calibrators.dna', 'bowtie2', 'calibrators.dna.1.bt2'),
+       join(CAL_DIR, 'index', 'calibrators.dna.extended', 'bowtie', 'calibrators.dna.extended.1.ebwt'),
+       join(CAL_DIR, 'index', 'calibrators.dna.extended', 'bowtie2', 'calibrators.dna.extended.1.bt2')
