@@ -129,9 +129,13 @@ rule gencode_gtf:
         8
     log:
         join(OUTDIR, 'logs', 'gencode.gtf.log')
+    singularity:
+        config['docker']['default']
     shell: 
         """
-        wget {params.url} -O- | gunzip -c > {output}
+        wget {params.url} -O- | gunzip -c > tmp.gtf
+        awk '{ if ($0 ~ "transcript_id") print $0; else print $0" transcript_id \"\";"; }' tmp.gtf > {output}
+        rm tmp.gtf
         echo 'Gencode GTF,{GENCODE_GTF},{params.date}' > {log}
         """
         

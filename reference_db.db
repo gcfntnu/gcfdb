@@ -33,4 +33,6 @@ else:
 config['ref_dir'] = REF_DIR
 
 include:
+    'indexes.rules'
+include:
     'convert.rules'
