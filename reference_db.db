@@ -31,6 +31,9 @@ else:
     logger.error('Reference dir missing. Check config or other ways for ref dir setup')
     raise ValueError
 config['ref_dir'] = REF_DIR
-
+if not 'ref' in locals():
+    ref = os.path.dirname(REF_DIR)
+    config['db']['reference_db'] = ref
+    config['db'][ref] = {}
 include:
     'convert.rules'
