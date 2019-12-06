@@ -36,4 +36,6 @@ if not 'ref' in locals():
     config['db']['reference_db'] = ref
     config['db'][ref] = {}
 include:
+    'indexes.rules'
+include:
     'convert.rules'

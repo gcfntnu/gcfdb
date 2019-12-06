@@ -56,7 +56,7 @@ rule hisat2_genome_index:
         '-p {threads} '
         '{input.genome} '
         '{params.prefix} '
-        
+
 rule bowtie_index:
     input:
         join('{ref_dir}', 'fasta', '{prefix}.fa')

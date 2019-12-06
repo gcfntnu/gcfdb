@@ -57,8 +57,14 @@ rule convert_gtf2bed12:
         """
         gtfToGenePred -genePredExt -geneNameAsName2 {input} {params}
         genePredToBed {params} {output}
-        rm {params.tmpfile}        
+        rm {params.tmpfile}
         """
+        
+rule convert_gtf2intervals:
+    input:
+        join('{ref_dir}', 'genes', 'genes.gtf')
+    output:
+        join('{ref_dir}', 'genes', 'genes.intervals')
         
 rule convert_gtf2refflat:
     input:
