@@ -134,7 +134,7 @@ rule ensembl_dna:
     shell: 
         """
         zcat {input} > {output}
-        echo 'Ensembl DNA,ENS_RELEASE,{ENS_GENOME},{params.date}' > {log}
+        echo 'Ensembl DNA,{ENS_RELEASE},{ENS_GENOME},{params.date}' > {log}
         """
         
 rule ensembl_cdna:
