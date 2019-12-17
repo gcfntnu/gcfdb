@@ -1,5 +1,8 @@
 #-*- mode:snakemake -*-
-"""ENSEMBL genome for human, mouse, rat
+"""Cached ENSEMBL genome for human, mouse, rat ++
+
+Two versions with and without added spikein sequences
+
 """
 
 from os.path import join
@@ -7,10 +10,8 @@ import yaml
 import string
 from datetime import datetime
 
-from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 from snakemake.logging import logger
 
-HTTP = HTTPRemoteProvider()
 
 # config
 extra_conf_fn = srcdir('ensembl.config')
@@ -133,9 +134,8 @@ ENS_TRANSCRIPTOME = _transcriptome.format(ENS_NAME, ENS_RELEASE, ORG, string.cap
 ENS_NONCODING = _ncdna.format(ENS_NAME, ENS_RELEASE, ORG, string.capwords(ORG), ENS_ASSEMBLY)
 
 rule ensembl_dna:
-    input:
-        HTTP.remote(ENS_GENOME)
-    params: 
+    params:
+        url = ENS_GENOME,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, ENS_GENOME.split('.gz')[0])
@@ -145,14 +145,13 @@ rule ensembl_dna:
         join(OUTDIR, 'logs', 'ensembl.dna.log')
     shell: 
         """
-        zcat {input} > {output}
+        wget -O- {params.url} | gunzip -c > {output}
         echo 'Ensembl DNA,{ENS_RELEASE},{ENS_GENOME},{params.date}' > {log}
         """
         
 rule ensembl_cdna:
-    input:
-        HTTP.remote(ENS_TRANSCRIPTOME)
-    params: 
+    params:
+        url = ENS_TRANSCRIPTOME,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, ENS_TRANSCRIPTOME.split('.gz')[0])
@@ -162,14 +161,13 @@ rule ensembl_cdna:
         join(OUTDIR, 'logs', 'ensembl.cdna.log')
     shell: 
         """
-        zcat {input} > {output}
+        wget -O- {params.url} | gunzip -c > {output}
         echo 'Ensembl CDNA,ENS_RELEASE,{ENS_TRANSCRIPTOME},{params.date}' > {log}
         """
         
 rule ensembl_noncoding:
-    input:
-        HTTP.remote(ENS_NONCODING)
-    params: 
+    params:
+        url = ENS_NONCODING,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, ENS_NONCODING.split('.gz')[0])
@@ -179,14 +177,13 @@ rule ensembl_noncoding:
         join(OUTDIR, 'logs', 'ensembl.noncoding.log')
     shell: 
         """
-        zcat {input} > {output}
+        wget -O- {params.url} | gunzip -c  > {output}
         echo 'Ensembl NCDNA,ENS_RELEASE,{ENS_NONCODING},{params.date}' > {log}
         """
 
 rule ensembl_gtf:
-    input:
-        HTTP.remote(ENS_GTF)
-    params: 
+    params:
+        url = ENS_GTF,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, ENS_GTF.split('.gz')[0])
@@ -198,7 +195,7 @@ rule ensembl_gtf:
         config['docker']['default']
     shell: 
         """
-        zcat {input} > tmp.gtf
+        wget {params.url} -O- | gunzip -c > tmp.gtf
         awk '{ if ($0 ~ "transcript_id") print $0; else print $0" transcript_id \"\";"; }' tmp.gtf > {output}
         rm tmp.gtf
         echo 'Ensembl GTF,ENS_RELEASE,{ENS_GTF},{params.date}' > {log}

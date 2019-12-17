@@ -8,7 +8,6 @@ include:
 
 rule contaminants_db_all:
     input:
-        join(EXT_DIR, 'univec', 'fasta', 'univec.fa'),
-        join(EXT_DIR, 'univec', 'anno.tsv'),
-        join(EXT_DIR, 'emvec', 'fasta', 'emvec.fa'),
-        join(EXT_DIR, 'emvec', 'anno.tsv')
+        rules.univec_db_all.input,
+        rules.emvec_db_all.input,
+        rules.jgi_db_all.input

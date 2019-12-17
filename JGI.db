@@ -53,3 +53,8 @@ rule jgi_ribokmers:
         echo "RiboKmers,NA,{params.url},{params.date}" > {log}
         """
     
+rule jgi_db_all:
+    input:
+        join(EXT_DIR, 'JGI', 'fasta', 'fusedEPmasked2.fa'),
+        join(EXT_DIR, 'JGI', 'fasta', 'fusedERPBBmasked2.fa.gz'),
+        join(EXT_DIR, 'JGI', 'fasta', 'ribokmers.fa.gz')        

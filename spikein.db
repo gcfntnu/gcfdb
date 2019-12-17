@@ -6,33 +6,25 @@ include:
 include:
     'indexes.rules'
 
-SPIKE_DIR = join(EXT_DIR, 'spikein')
 FILTER_CONF = config.get('filter')
 if FILTER_CONF is None:
    config['filter'] = FILTER_CONF = {}
 SPIKE_CONF = FILTER_CONF.get('spikein')
 if SPIKE_CONF is None:
    config['filter']['spikein'] = SPIKE_CONF = {}
-REF = config['filter']['spikein'].get('ref', '').split(',')
-   
-def spikein_get_fasta(REF):
-    out = []
-    for r in REF:
-        if r.lower() == 'ercc':
-            out.append(join(EXT_DIR, 'ERCC', 'fasta', 'ERCC92.fa'))
-        if r.lower() == 'smallrna_calibrators':
-            out.append(join(EXT_DIR, 'smallrna_calibrators', 'fasta', 'calibrators.dna.fa'))
-    return out
 
-rule spikein_fasta:
+rule spikein_merged_fasta:
     input:
-        spikein_get_fasta(REF)
+        join(EXT_DIR, 'ERCC', 'fasta', 'ERCC92.fa'),
+        join(EXT_DIR, 'smallrna_calibrators', 'fasta', 'calibrators.dna.fa')
     output:
-        join(SPIKE_DIR, 'fasta', 'spikein.fa')
+        join(EXT_DIR, 'merged_spikein', 'fasta', 'merged_spikein.fa')
     shell:
         'cat {input} > {output}'
         
 
 rule spikein_indexes:
     input:
-        join(EXT_DIR, 'ERCC', 'index', 'ERCC92', 'bowtie', 'ERCC92.1.ebwt')
+        join(EXT_DIR, 'ERCC', 'index', 'ERCC92', 'bowtie', 'ERCC92.1.ebwt'),
+        join(EXT_DIR, 'smallrna_calibrators', 'index', 'calibrators.dna', 'bowtie', 'calibrators.dna.1.ebwt'),
+        join(EXT_DIR, 'merged_spikein', 'index', 'merged_spikein', 'bowtie', 'merged_spikein.1.ebwt')

@@ -28,11 +28,9 @@ include sequences of mammalian origin are excluded. Consequently, some
 vector contamination that could be detected using the full UniVec
 database may be missed when UniVec_Core is used.
 """
-
 rule contaminants_univec_fasta:
     params:
         url = 'http://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec',
-        url_core = 'http://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec_Core',
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(EXT_DIR, 'univec', 'fasta', 'univec.fa')
@@ -40,8 +38,8 @@ rule contaminants_univec_fasta:
         join(EXT_DIR, 'univec', 'logs', 'univec.log')
     shell:
         """
-        wget {params.url_core} -O- > {output}
-        echo "UniVec core,NA,{params.url_core},{params.date}" > {log}
+        wget {params.url} -O- > {output}
+        echo "UniVec,NA,{params.url},{params.date}" > {log}
         """
 
 rule univec_anno:
@@ -49,6 +47,30 @@ rule univec_anno:
         rules.contaminants_univec_fasta.output
     output:
         join(EXT_DIR, 'univec', 'anno.tsv')
+    shell:
+        """
+        grep '>' {input} | sed 's/ /\t/' > {output}
+        """
+        
+rule contaminants_univec_core_fasta:
+    params:
+        url_core = 'http://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec_Core',
+        date = datetime.now().strftime("%d-%m-%Y")
+    output:
+        join(EXT_DIR, 'univec_core', 'fasta', 'univec_core.fa')
+    log:
+        join(EXT_DIR, 'univec_core', 'logs', 'univec_core.log')
+    shell:
+        """
+        wget {params.url_core} -O- > {output}
+        echo "UniVec core,NA,{params.url_core},{params.date}" > {log}
+        """
+
+rule univec_core_anno:
+    input:
+        rules.contaminants_univec_core_fasta.output
+    output:
+        join(EXT_DIR, 'univec_core', 'anno.tsv')
     shell:
         """
         grep '>' {input} | sed 's/ /\t/' > {output}
