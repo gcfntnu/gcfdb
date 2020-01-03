@@ -135,7 +135,7 @@ if os.path.exists(extra_conf_fn):
         update_config2(config, c)
 
         
-ASSEMBLY = DB_CONF['assembly']
+ASSEMBLY = config['db']['assembly']
 URL = 'ftp://download.big.ac.cn/lncbook'
 LNCB_RELEASE = config['db']['lncbook']['release']
 LNCB_GTF = join(URL, '1-LncRNAs(GRCh37%7C38)/', 'lncRNA_LncBook_{}_{}.gtf.gz'.format(ASSEMBLY, LNCB_RELEASE))

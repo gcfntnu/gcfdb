@@ -27,7 +27,7 @@ except:
 URL = 'https://lncipedia.org/downloads/lincipedia_{}'.format(RELEASE)
 LNC_FASTA = join(URL, 'high-confidence-set/lncipedia_{}_hc.fasta'.format(RELEASE))
 
-ASSEMBLY = 'hg38' if DB_CONF['assembly'] == 'GRCh38' else 'hg37'
+ASSEMBLY = 'hg38' if config['db']['assembly'] == 'GRCh38' else 'hg37'
 
 LNC_GTF = join(URL, 'full-database', 'lncipedia_{}_{}.gtf'.format(RELEASE, ASSEMBLY))
 
