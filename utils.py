@@ -12,10 +12,16 @@ from snakemake.workflow import srcdir
 from snakemake.utils import update_config, min_version
 
 min_version("5.1.2")
+TMPDIR = os.environ.get('TMPDIR', '/tmp')
+# environment variables can override config file
+INTERIM_DIR = environ.get('GCF_INTERIM') or config.get('interim_dir', 'data/tmp/')
+makedirs(INTERIM_DIR, exist_ok=True)
+EXT_DIR = environ.get('GCF_EXT') or config.get('ext_dir', 'data/ext')
+FASTQ_DIR =  environ.get('GCF_FASTQ') or config.get('fastq_dir','data/raw/fastq')
+makedirs(FASTQ_DIR, exist_ok=True)
+PROCESSED_DIR =  environ.get('GCF_PROCESSED') or config.get('processed_dir', 'data/processed')
+makedirs(PROCESSED_DIR, exist_ok=True)
 
-if 'EXT_DIR' not in locals():
-    EXT_DIR = environ.get('GCF-EXT') or config.get('ext_dir', 'ext')
-TMPDIR = environ.get('TMPDIR') or config.get('tmpdir')
 
 def update_config2(config, extra_config):
     """Recursively update dictionary config with overwrite_config.
@@ -47,3 +53,17 @@ default_config_sections = ['db', 'quant', 'filter', 'analysis', 'samples']
 for section in default_config_sections:
     if section not in config:
         config[section] = {}
+
+# load function for statistical models
+def load_model(model_yaml_file):
+    with open(model_yaml_file) as fh:
+        MODELS  = yaml.load(fh) or {}
+        config['models'] = MODELS
+        config['model_names'] = list(MODELS.keys())
+
+# library preparation kit specific configuration
+libprep_fn = srcdir('libprep.config')
+with open(libprep_fn) as fh:
+    LIBPREP_CONF  = yaml.load(fh) or {}
+kit = config.get('libprepkit', 'default')
+LIBPREP = LIBPREP_CONF[kit]

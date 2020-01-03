@@ -20,7 +20,7 @@ CIS_DB_MAP = {'homo_sapiens':' https://resources.aertslab.org/cistarget/database
 TF_MAP = {'homo_sapiens': 'https://raw.githubusercontent.com/aertslab/pySCENIC/master/resources/hs_hgnc_curated_tfs.txt',
           'mus_musculus': 'https://raw.githubusercontent.com/aertslab/pySCENIC/master/resources/mm_mgi_tfs.txt'}
 
-ASSEMBLY = config.get('assembly')
+ASSEMBLY = config['db'].get('assembly')
 if ASSEMBLY is None:
     if ORG == 'homo_sapiens':
         ASSEMBLY = 'GRCh38'

@@ -38,7 +38,7 @@ if ORG == 'homo_sapiens':
     GENCODE_ASSEMBLY = 'GRCh37' if int(GENCODE_RELEASE) <= 19 else 'GRCh38'
 else:
     GENCODE_ASSEMBLY = 'NCBIM37' if GENCODE_RELEASE == 'M1' else 'GRCm38'
-config['assembly'] = DB_CONF['assembly'] = GENCODE_ASSEMBLY
+config['db']['assembly'] = DB_CONF['assembly'] = GENCODE_ASSEMBLY
 TRANSCRIPTOME_TYPE = DB_CONF.get('transcriptome_type', 'pc_') #['pc_','']
 ERCC = DB_CONF.get('add_ercc', False)
 OUTDIR = join(EXT_DIR, 'gencode', ORG, 'release-{}'.format(GENCODE_RELEASE), GENCODE_ASSEMBLY)

@@ -89,7 +89,7 @@ def ensembl_search(org, strain=None, assembly=None):
 DB_CONF = config['db']['ensembl']
 ORG = config.get('organism', 'homo_sapiens')
 STRAIN = config.get('strain', DB_CONF.get('strain'))
-ASSEMBLY = config.get('assembly', DB_CONF.get('assembly'))
+ASSEMBLY = DB_CONF.get('assembly')
 if '__' in ORG:
     raise ValueError('Multispecies genome is not supported for Ensembl!')
 
@@ -100,8 +100,8 @@ if STRAIN != SPECIES['strain']:
     STRAIN = config['strain'] = DB_CONF['strain'] = SPECIES['strain']
 ENS_RELEASE = str(DB_CONF.get('release', SPECIES['release']))
 
-ENS_ASSEMBLY =  config.get('assembly', DB_CONF.get('assembly', SPECIES['assembly']))    
-config['assembly'] = DB_CONF['assembly'] = ENS_ASSEMBLY
+ENS_ASSEMBLY =  config['db'].get('assembly', DB_CONF.get('assembly', SPECIES['assembly']))   
+DB_CONF['assembly'] = config['db']['assembly'] = ENS_ASSEMBLY
 
 if ORG == 'homo_sapiens':
     ENS_NAME = '' if ENS_ASSEMBLY == 'GRCh38' else '/grch37'
