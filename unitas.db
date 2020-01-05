@@ -5,7 +5,8 @@ Additional files that contain reference sequeces in FASTA format. FASTA headers 
 
 This will be added to ncRNA.fas
 """
-from os.path import join
+include:
+    'contaminants.db'
 
 CALIBRATORS_EXTEND = config['filter'].get('calibrators_extend', False)
 UNITAS_REFSEQ = []
@@ -19,7 +20,7 @@ UNITAS_ORG = _unitas_map[config.get('organism')]
 
 rule contaminants_unitas:
     input:
-        get_contaminants_fasta()
+        join(EXT_DIR, 'univec_core', 'fasta', 'univec_core.fa')
     params:
         script = srcdir('scripts/contaminants_unitas.py')
     output:

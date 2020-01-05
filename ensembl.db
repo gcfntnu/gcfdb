@@ -38,8 +38,8 @@ def _ens_species_rest(grch37=False):
         return None
     res = r.json()['species']
     if not use_cache:
-        with open(fn, 'wb') as fh:
-            pickle.dump(res, cache_fn)
+        with open(cache_fn, 'wb') as fh:
+            pickle.dump(res, fh)
     return res
 
 def _search_names(S, org, strain=None, assembly=None):
