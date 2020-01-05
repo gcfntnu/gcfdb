@@ -65,5 +65,5 @@ def load_model(model_yaml_file):
 libprep_fn = srcdir('libprep.config')
 with open(libprep_fn) as fh:
     LIBPREP_CONF  = yaml.load(fh) or {}
-kit = config.get('libprepkit', 'default')
-LIBPREP = LIBPREP_CONF[kit]
+kit = config.get('libprepkit')
+LIBPREP = LIBPREP_CONF.get(kit, {})
