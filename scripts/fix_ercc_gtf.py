@@ -2,7 +2,7 @@
 
 import sys
 
-def fix_ercc_gtf(input, output, exon2gene=False, biotype='spikein'):
+def fix_ercc_gtf(input, output, exon2gene=False, exon2transcript=True, biotype='spikein'):
     """Adds gene_biotype and transcript_biotype to ERCC gtf.
     """
     for line in input.read().splitlines():
@@ -12,6 +12,8 @@ def fix_ercc_gtf(input, output, exon2gene=False, biotype='spikein'):
         new_line += '\n'
         if exon2gene:
             new_line = new_line.replace('exon', 'gene')
+        if exon2transcript:
+            new_line = new_line.replace('exon', 'transcript')
         output.write(new_line)
     
 def main(arguments):

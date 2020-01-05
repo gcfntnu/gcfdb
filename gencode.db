@@ -270,8 +270,7 @@ rule gencode_db_all:
         join(OUTDIR, 'fasta', 'genome.dict'),
         join(OUTDIR, 'genes', 'genes.bed12'),
         join(OUTDIR, 'genes', 'genes.refflat.gz'),
-        join(OUTDIR, 'fasta', 'gtf.gffread.transcripts.fa'),
-        join(OUTDIR, 'fasta', 'gtf.rsem.transcripts.fa'),
-        join(OUTDIR, 'index', 'gtf.rsem.transcripts', 'salmon', 'info.json'),
+        join(OUTDIR, 'fasta', 'transcriptome.fa'),
+        join(OUTDIR, 'index', 'transcriptome', 'salmon', 'info.json'),
         join(OUTDIR, 'index', 'gentrome', 'salmon', 'info.json'),
         join(OUTDIR, 'index', 'genome', 'star', 'r_99', 'SA')
