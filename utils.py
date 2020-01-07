@@ -22,6 +22,10 @@ makedirs(FASTQ_DIR, exist_ok=True)
 PROCESSED_DIR =  environ.get('GCF_PROCESSED') or config.get('processed_dir', 'data/processed')
 makedirs(PROCESSED_DIR, exist_ok=True)
 
+if not 'db' in config:
+    config['db'] = {}
+if not 'reference_db'in config['db']:
+    config['db']['reference_db'] = 'ensembl'
 
 def update_config2(config, extra_config):
     """Recursively update dictionary config with overwrite_config.
@@ -67,3 +71,9 @@ with open(libprep_fn) as fh:
     LIBPREP_CONF  = yaml.load(fh) or {}
 kit = config.get('libprepkit')
 LIBPREP = LIBPREP_CONF.get(kit, {})
+
+# docker images
+docker_fn = srcdir('docker.config')
+with open(docker_fn) as fh:
+    dck = yaml.load(fh) or {}
+    update_config2(config, dck)
