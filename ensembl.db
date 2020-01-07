@@ -120,8 +120,7 @@ if ERCC:
         'ercc.db'
 include:
     'convert.rules'
-include:
-    'indexes.rules'
+
 
 _genome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/dna/{}.{}.dna.primary_assembly.fa.gz'
 _gtf = 'ftp.ensembl.org/pub{}/release-{}/gtf/{}/{}.{}.{}.gtf.gz'
@@ -275,13 +274,15 @@ rule ensembl_db_downloads:
         cdna = rules.ensembl_add_ercc2cdna.output if ERCC else rules.ensembl_cdna.output,
         noncoding = rules.ensembl_noncoding.output,
         gtf = rules.ensembl_add_ercc2gtf.output if ERCC else rules.ensembl_gtf.output,
-        genome_index = rules.ensembl_index_genome.output
+        genome_index = rules.ensembl_index_genome.output,
+        transcriptome = join(OUTDIR, 'fasta', 'gtf.rsem.transcripts.fa')
     output:
         genome = join(OUTDIR, 'fasta', 'genome.fa'),
         cdna = join(OUTDIR, 'fasta', 'cdna.fa'),
         gtf = join(OUTDIR, 'genes', 'genes.gtf'),
         noncoding = join(OUTDIR, 'fasta', 'ncdna.fa'),
-        genome_index = join(OUTDIR, 'fasta', 'genome.fa.fai')
+        genome_index = join(OUTDIR, 'fasta', 'genome.fa.fai'),
+        transcriptome = join(OUTDIR, 'fasta', 'transcriptome.fa')
     shell:
         """
         ln -sr {input.genome} {output.genome}
@@ -289,7 +290,11 @@ rule ensembl_db_downloads:
         ln -sr {input.gtf} {output.gtf}
         ln -sr {input.noncoding} {output.noncoding}
         ln -sr {input.genome_index} {output.genome_index}
+        ln -sr {input.transcriptome} {output.transcriptome}
         """
+
+include:
+    'indexes.rules'
         
 rule ensembl_db_all:
     input:
