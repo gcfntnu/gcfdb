@@ -243,7 +243,7 @@ rule ensembl_index_genome:
     output:
         rules.ensembl_add_ercc2genome.output[0] + '.fai' if ERCC else rules.ensembl_dna.output[0] + '.fai'
     singularity:
-        'docker://gcfntnu/ensembl:0.1'
+        'docker://' + config['docker']['samtools']
     shell:
         'samtools faidx {input}'
 
@@ -255,9 +255,9 @@ rule ensembl_cdna_gtf:
     output:
         join(OUTDIR, ORG.capitalize() + '.' + ENS_ASSEMBLY + '.cdna.gtf.fa')
     singularity:
-        'docker://gcfntnu/ensembl:0.1'
+        'docker://' + config['docker']['gffread']
     shell:
-        'gffread -w {output} -G -E -g {input.dna} {input.gtf} '
+        'gffread -w {output} -g {input.dna} {input.gtf} '
 
 rule ensembl_add_ercc2cdna_gtf:
     input:
@@ -275,7 +275,7 @@ rule ensembl_db_downloads:
         noncoding = rules.ensembl_noncoding.output,
         gtf = rules.ensembl_add_ercc2gtf.output if ERCC else rules.ensembl_gtf.output,
         genome_index = rules.ensembl_index_genome.output,
-        transcriptome = join(OUTDIR, 'fasta', 'gtf.rsem.transcripts.fa')
+        transcriptome = rules.ensembl_cdna_gtf.output
     output:
         genome = join(OUTDIR, 'fasta', 'genome.fa'),
         cdna = join(OUTDIR, 'fasta', 'cdna.fa'),

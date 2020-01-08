@@ -41,7 +41,7 @@ rule rnacentral_gtf:
     output:
         join(RNACENTRAL_DIR, 'genes', RNACENTRAL_ORG + '.gtf')
     singularity:
-        'docker://' + config['docker']['']
+        'docker://' + config['docker']['gffread']
     shell:
         'gffread {input} -T -o {output}'
 

@@ -197,7 +197,7 @@ rule gencode_index_genome:
     output:
         rules.gencode_add_ercc2genome.output[0] + '.fai' if ERCC else rules.gencode_dna.output[0] + '.fai'
     singularity:
-        'docker://gcfntnu/ensembl:0.1'
+        'docker://' + config['docker']['samtools']
     shell:
         'samtools faidx {input}'
 
@@ -209,7 +209,7 @@ rule gencode_cdna_gtf:
     output:
         join(OUTDIR, ORG.capitalize() + '.' + GENCODE_ASSEMBLY + '.cdna.gtf.fa')
     singularity:
-        'docker://gcfntnu/ensembl:0.1'
+        'docker://' + config['docker']['gffread']
     shell:
         'gffread -w {output} -G -E -g {input.dna} {input.gtf} '
 
@@ -229,7 +229,7 @@ rule gencode_trna:
     params:
         base = join(OUTDIR, 'fasta', 'gtf.trna')
     singularity:
-        'docker://quay.io/biocontainers/rsem:1.3.2--pl526ha52163a_1'
+        'docker://' + config['docker']['rsem']
     output:
          join(OUTDIR, 'fasta', 'gtf.trna.transcripts.fa')
     shell:

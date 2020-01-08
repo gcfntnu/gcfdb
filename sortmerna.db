@@ -28,7 +28,7 @@ rule sortmerna_db:
         join(EXT_DIR, 'sortmerna', 'fasta', 'rfam-5.8s-database-id98.fasta'),
         join(EXT_DIR, 'sortmerna', 'fasta', 'rfam-5s-database-id98.fasta')
     singularity:
-        'docker://flatberg/filter:0.1'
+        'docker://' + config['docker']['default']
     log:
         join(EXT_DIR, 'sortmerna', 'logs', 'sortmerna.log')
     shell:
@@ -45,7 +45,7 @@ rule sortmerna_index:
     output:
         join(EXT_DIR, 'sortmerna', 'index', '{db}.stats')
     singularity:
-        'docker://quay.io/biocontainers/sortmerna:2.1b--he860b03_4'
+        'docker://' + config['docker']['sortmerna']
     shell:
         'indexdb_rna --ref {input.fasta},{params.index}'
     

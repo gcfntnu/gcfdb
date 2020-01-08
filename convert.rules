@@ -10,7 +10,7 @@ rule convert_gtf2gene_csv:
     output:
         join('{ref_dir}', 'genes', 'genes.tsv')
     singularity:
-        'docker://quay.io/biocontainers/pyensembl:1.8.4--py_0'
+        'docker://' + config['docker']['pyensembl']
     shell:
         'python {params.script} {input} > {output}'
         
@@ -22,7 +22,7 @@ rule convert_gtf2transcript_csv:
     output:
         join('{ref_dir}', 'genes', 'transcripts.tsv')
     singularity:
-        'docker://quay.io/biocontainers/pyensembl:1.8.4--py_0'
+        'docker://' + config['docker']['pyensembl']
     shell:
         'python {params.script} {input} > {output}'    
 
@@ -40,7 +40,7 @@ rule convert_fasta2sequence_dict:
     output:
         join('{ref_dir}', 'fasta', 'genome.dict')
     singularity:
-        'docker://broadinstitute/picard:2.21.1'    
+        'docker://' + config['docker']['picard_gatk']
     shell:
         'java -jar -Xms2g -Xmx2g /usr/picard/picard.jar CreateSequenceDictionary R={input} O={output}'
         
@@ -52,7 +52,7 @@ rule convert_gtf2bed12:
     params:
         tmpfile = join(TMPDIR, 'gene.genepred')
     singularity:
-        'docker://gcfntnu/ucsc-scripts'
+        'docker://' + config['docker']['ucsc-scripts']
     shell:
         """
         gtfToGenePred -genePredExt -geneNameAsName2 {input} {params}
@@ -74,7 +74,7 @@ rule convert_gtf2refflat:
     params:
         tmpfile = join(TMPDIR, 'refflat.tmp')
     singularity:
-        'docker://gcfntnu/ucsc-scripts'
+        'docker://' + config['docker']['ucsc-scripts']
     shell:
         """
         gtfToGenePred -genePredExt -geneNameAsName2 {input} {params}
@@ -91,9 +91,9 @@ rule convert_gtf_transcriptome_gffread:
     output:
         join('{ref_dir}', 'fasta', 'gtf.gffread.transcripts.fa')
     singularity:
-        'docker://quay.io/biocontainers/gffread:0.11.4--hdbcaa40_0'
+        'docker://' + config['docker']['ucsc-scripts']
     shell:
-        'gffread -w {output} -G -E -g {input.genome} {input.gtf}'
+        'gffread -w {output} -g {input.genome} {input.gtf}'
         
 rule convert_gtf_transcriptome_rsem:
     input:
@@ -102,7 +102,7 @@ rule convert_gtf_transcriptome_rsem:
     params:
         base = join('{ref_dir}', 'fasta', 'gtf.rsem')
     singularity:
-        'docker://quay.io/biocontainers/rsem:1.3.2--pl526ha52163a_1'
+        'docker://' + config['docker']['rsem']
     output:
         join('{ref_dir}', 'fasta', 'gtf.rsem.transcripts.fa')
     shell:

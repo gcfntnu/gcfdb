@@ -21,7 +21,7 @@ rule quickmirseq_mirbase_index:
         mature_log = rules.mirbase_mature_fasta.log,
         hairpin_log = rules.mirbase_hairpin_fasta.log
     singularity:
-        'docker://gcfntnu/quickmirseq:1.0'
+        'docker://' + config['docker']['quickmirseq']
     output:
         join(QMSQ_EXT, 'mirna_0_0.fa')
     log:
@@ -50,7 +50,7 @@ rule quickmirseq_smallrna_index:
         join(QMSQ_EXT, 'smallRNA.rev.1.ebwt'),
         join(QMSQ_EXT, 'smallRNA.rev.2.ebwt')
     singularity:
-        'docker://gcfntnu/quickmirseq:1.0'
+        'docker://' + config['docker']['quickmirseq']
     log:
         join(QMSQ_EXT, 'logs', 'quickmirseq.smallrna.db.log')
     shell:
@@ -74,7 +74,7 @@ rule quickmirseq_mrna_index:
         join(QMSQ_EXT, 'mrna.rev.1.ebwt'),
         join(QMSQ_EXT, 'mrna.rev.2.ebwt')
     singularity:
-        'docker://gcfntnu/quickmirseq:1.0'
+        'docker://' + config['docker']['quickmirseq']
     shell:
         'bowtie-build {input.cdna} {QMSQ_EXT}/mrna '
         '&& cp {input.cdna} {output[0]} '
@@ -91,7 +91,7 @@ rule quickmirseq_genome_index:
         join(QMSQ_EXT, 'genome.rev.1.ebwt'),
         join(QMSQ_EXT, 'genome.rev.2.ebwt')
     singularity:
-        'docker://gcfntnu/quickmirseq:1.0'
+        'docker://' + config['docker']['quickmirseq']
     shell:
         'bowtie-build {input.genome} {params.index_base} '
         '&& cp {input.noncoding} {output[0]} '

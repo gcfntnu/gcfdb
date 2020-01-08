@@ -7,7 +7,8 @@ include:
         
 rule star_genome_index_gtf:
     input: 
-        genome = join('{ref_dir}', 'fasta', '{prefix}.fa')
+        genome = join('{ref_dir}', 'fasta', '{prefix}.fa'),
+        gtf = join('{ref_dir}', 'genes', 'genes.gtf')
     output:
         index = join('{ref_dir}', 'index', '{prefix}', 'star', 'r_{sjdbOverhang}', 'SA')
     params:
@@ -23,13 +24,14 @@ rule star_genome_index_gtf:
         '--runMode genomeGenerate '
         '--genomeDir {params.index_dir} '
         '--genomeFastaFiles {input.genome} '
+        '--sjdbGTFfile {input.gtf} '
         '--sjdbOverhang {params.sjdbOverhang} '
 
 rule star_genome_index:
     input: 
         genome = join('{ref_dir}', 'fasta', '{prefix}.fa')
     output:
-        index = join('{ref_dir}', 'index', '{prefix}', 'star', , 'SA')
+        index = join('{ref_dir}', 'index', '{prefix}', 'star', 'SA')
     params:
         index_dir =  join('{ref_dir}', 'index', '{prefix}', 'star'),
         sjdbOverhang = '{sjdbOverhang}'

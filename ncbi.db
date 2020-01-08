@@ -11,7 +11,7 @@ rule ncbi_homo_spaiens_rrna:
     log:
         join(EXT_DIR, 'ncbi', 'homo_sapiens', 'logs', 'rrna.log')
     singularity:
-        'docker://flatberg/entrez-direct:10.2'
+        'docker://' + config['docker']['entrez-direct']
     shell:
         """
         efetch -db nuccore -id U13369.1 -format fasta > {output}
@@ -27,7 +27,7 @@ rule ncbi_mus_musculus_rrna:
     log:
         join(EXT_DIR, 'ncbi', 'mus_musculus', 'logs', 'rrna.log')
     singularity:
-        'docker://flatberg/entrez-direct:10.2'
+        'docker://' + config['docker']['entrez-direct']
     shell:
         """
         efetch -db nuccore -id bk000964.3 -format fasta > {output}

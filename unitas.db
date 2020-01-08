@@ -32,7 +32,7 @@ rule unitas_db:
     output:
         directory(join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG)))
     singularity:
-        'docker://gcfntnu/unitas:1.7.0'     
+        'docker://' + config['docker']['unitas']     
     shell:
         """
         unitas.pl -latest_ref -species {ORG} -input haha.txt
