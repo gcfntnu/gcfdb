@@ -42,7 +42,7 @@ rule convert_fasta2sequence_dict:
     singularity:
         'docker://' + config['docker']['picard_gatk']
     shell:
-        'java -jar -Xms2g -Xmx2g /usr/picard/picard.jar CreateSequenceDictionary R={input} O={output}'
+        'picard CreateSequenceDictionary R={input} O={output}'
         
 rule convert_gtf2bed12:
     input:
