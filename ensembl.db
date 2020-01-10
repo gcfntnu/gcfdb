@@ -192,7 +192,7 @@ rule ensembl_gtf:
     log:
         join(OUTDIR, 'logs', 'ensembl.gtf.log')
     singularity:
-        config['docker']['default']
+        'docker://' + config['docker']['default']
     shell: 
         """
         wget {params.url} -O- | gunzip -c > tmp.gtf
