@@ -186,7 +186,7 @@ rule ensembl_gtf:
         url = ENS_GTF,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
-        join(OUTDIR, ENS_GTF.split('.gz')[0])
+        gtf = join(OUTDIR, ENS_GTF.split('.gz')[0])
     threads: 
         8
     log:
@@ -195,9 +195,7 @@ rule ensembl_gtf:
         'docker://' + config['docker']['default']
     shell: 
         """
-        wget {params.url} -O- | gunzip -c > tmp.gtf
-        awk '{{ if ($0 ~ "transcript_id") print $0; else print $0" transcript_id \"\";"; }}' tmp.gtf > {output}
-        rm tmp.gtf
+        wget {params.url} -O- | gunzip -c > {output.gtf}
         echo 'Ensembl GTF,ENS_RELEASE,{ENS_GTF},{params.date}' > {log}
         """
    
