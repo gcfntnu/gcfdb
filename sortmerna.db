@@ -11,7 +11,7 @@ if os.path.exists(extra_conf_fn):
         c  = yaml.load(fh) or {}
         update_config2(config, c)
 
-DB = config['db']['sortmerna']['db'].split(',')
+SMDB = config['db']['sortmerna']['db'].split(',')
 
 rule sortmerna_db:
     params:
@@ -51,4 +51,4 @@ rule sortmerna_index:
     
 rule sortmerna_db_all:
     input:
-        expand(rules.sortmerna_index.output, db=DB)
+        expand(rules.sortmerna_index.output, db=SMDB)

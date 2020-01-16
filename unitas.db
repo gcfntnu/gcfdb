@@ -16,7 +16,7 @@ _unitas_map = {'homo_sapiens': 'Human',
                'mus_musculus': 'Mouse',
                'mouse': 'Mouse',
                'mmu': 'Mouse'}
-UNITAS_ORG = _unitas_map[config.get('organism')]
+UNITAS_ORG = _unitas_map[config['organism']]
 
 rule contaminants_unitas:
     input:
