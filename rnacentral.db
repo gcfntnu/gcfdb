@@ -1,9 +1,16 @@
 #-*-mode:snakemake-*-
 
 # config
+# config
+extra_conf_fn = srcdir('rnacentral.config')
+if os.path.exists(extra_conf_fn):
+    with open(extra_conf_fn) as fh:
+        c  = yaml.load(fh) or {}
+        update_config2(config, c)
+
 
 RNACENTRAL_ORG = config['organism'] + '.' + config['db']['assembly']
-RNACENTRAL_RELEASE = config['db']['rnacentral']
+RNACENTRAL_RELEASE = config['db']['rnacentral']['release']
 
 
 ## RNACENTRAL
@@ -15,7 +22,8 @@ RNACENTRAL_FASTA = 'ftp://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/{}/seq
 RNACENTRAL_FASTQ = RNACENTRAL_FASTA.format(RNACENTRAL_RELEASE)
 RNACENTRAL_MAP = 'ftp://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/{}/id_mapping/id_mapping.tsv.gz'
 RNACENTRAL_MAP = RNACENTRAL_MAP.format(RNACENTRAL_RELEASE)
-RNACENTRAL_DBMAP 'ftp://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/{}/id_mapping/database_mappings/{{mapping}}.tsv'.format(RNACENTRAL_RELEASE)
+RNACENTRAL_DBMAP = 'ftp://ftp.ebi.ac.uk/pub/databases/RNAcentral/releases/{}/id_mapping/database_mappings'
+RNACENTRAL_DBMAP = RNACENTRAL_DBMAP.format(RNACENTRAL_RELEASE)
 
 RNACENTRAL_DIR = join(EXT_DIR, 'rnacentral', config['organism'], config['db']['assembly'])
 
@@ -51,7 +59,6 @@ rule rnacentral_fasta:
     output:
         join(RNACENTRAL_DIR, 'fasta', 'rnacentral_active.fa')
     shell:
-    shell:
         'wget -O - {params.url} | gunzip -c > {output}'
         
 rule rnacentral_ids:
@@ -65,7 +72,7 @@ rule rnacentral_ids:
 # example of a specific db id-mapping
 rule rnacentral_mapping:
     params:
-        url = RNACENTRAL_DBMAP 
+        url = join(RNACENTRAL_DBMAP, '{db}.tsv') 
     output:
         join(RNACENTRAL_DIR, 'rnacentral_{db}.tsv')
     shell:
