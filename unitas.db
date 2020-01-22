@@ -10,6 +10,7 @@ include:
 
 CALIBRATORS_EXTEND = config['filter'].get('calibrators_extend', False)
 UNITAS_REFSEQ = []
+
 _unitas_map = {'homo_sapiens': 'Human',
               'human': 'Human',
                'hsa': 'Human',
@@ -17,6 +18,10 @@ _unitas_map = {'homo_sapiens': 'Human',
                'mouse': 'Mouse',
                'mmu': 'Mouse'}
 UNITAS_ORG = _unitas_map[config['organism']]
+
+rule unitas_dummy_input:
+    output:
+        temp(touch('.unitas_dummy.txt'))
 
 rule contaminants_unitas:
     input:
@@ -28,13 +33,22 @@ rule contaminants_unitas:
     shell:
         'python {params.script} {input} > {output}'
 
-rule unitas_db:   
+rule unitas_db:
+    input:
+        rules.unitas_dummy_input.output
     output:
-        directory(join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG)))
+        db_log = join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'db_versions.info'),
+        seqmap_exe = join(EXT_DIR, 'unitas', 'seqmap.exe')
+    params:
+        outdir = join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG))
     singularity:
         'docker://' + config['docker']['unitas']     
     shell:
         """
-        unitas.pl -latest_ref -species {ORG} -input haha.txt
+        unitas.pl -latest_ref -species {ORG} -input {input}
         mv UNITAS_refdump_* {EXT_DIR}/unitas/
         """
+
+rule unitas_db_all:
+    input:
+        join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'miRBase_hairpin')

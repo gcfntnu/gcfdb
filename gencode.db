@@ -130,12 +130,10 @@ rule gencode_gtf:
     log:
         join(OUTDIR, 'logs', 'gencode.gtf.log')
     singularity:
-        config['docker']['default']
+        'docker://' + config['docker']['default']
     shell: 
         """
-        wget {params.url} -O- | gunzip -c > tmp.gtf
-        awk '{ if ($0 ~ "transcript_id") print $0; else print $0" transcript_id \"\";"; }' tmp.gtf > {output}
-        rm tmp.gtf
+        wget {params.url} -O- | gunzip -c > {output}
         echo 'Gencode GTF,{GENCODE_GTF},{params.date}' > {log}
         """
         
@@ -241,13 +239,15 @@ rule gencode_db_downloads:
         cdna = rules.gencode_add_ercc2cdna.output if ERCC else rules.gencode_cdna.output,
         noncoding = rules.gencode_noncoding.output,
         gtf = rules.gencode_add_ercc2gtf.output if ERCC else rules.gencode_gtf.output,
-        genome_index = rules.gencode_index_genome.output
+        genome_index = rules.gencode_index_genome.output,
+        transcriptome = rules.gencode_cdna_gtf.output
     output:
         genome = join(OUTDIR, 'fasta', 'genome.fa'),
         cdna = join(OUTDIR, 'fasta', 'cdna.fa'),
         gtf = join(OUTDIR, 'genes', 'genes.gtf'),
         noncoding = join(OUTDIR, 'fasta', 'ncdna.fa'),
-        genome_index = join(OUTDIR, 'fasta', 'genome.fa.fai')
+        genome_index = join(OUTDIR, 'fasta', 'genome.fa.fai'),
+        transcriptome = join(OUTDIR, 'fasta', 'transcriptome.fa')
     shell:
         """
         ln -sr {input.genome} {output.genome}
@@ -255,6 +255,7 @@ rule gencode_db_downloads:
         ln -sr {input.gtf} {output.gtf}
         ln -sr {input.noncoding} {output.noncoding}
         ln -sr {input.genome_index} {output.genome_index}
+        ln -sr {input.transcriptome} {output.transcriptome}
         """
 
 rule gencode_db_all:
