@@ -49,3 +49,25 @@ rule gtrnadb_trna:
         wget -O {output} {params.url}
         echo "GtRNAdb,{params.version},{params.url},{params.date}" > {log}
         """
+
+def gtrnadb2_url(wildcards):
+    org = GTRNADB_ORG[ORG]
+    name = GTRNADB_NAME[ORG]
+    ver = GTRNADB_VER[ORG]
+    url = 'http://gtrnadb.ucsc.edu/GtRNAdb2/genomes/eukaryota/{}{}/{}{}-tRNAs.fa'.format(name, ver, org, ver)
+    return url
+
+rule gtrnadb2_trna:
+    params:
+        url = gtrnadb2_url,
+        date = datetime.now().strftime("%d-%m-%Y"),
+        version = GTRNADB_VER[ORG]
+    output:
+        join(EXT_DIR, 'gtrnadb2', ORG, 'release-{}'.format(GTRNADB_VER[ORG]), 'tRNAs.fa')
+    log:
+        join(EXT_DIR, 'gtrnadb2', ORG, 'release-{}'.format(GTRNADB_VER[ORG]), 'logs', 'gtrnadb.log')
+    shell:
+        """
+        wget -O {output} {params.url}
+        echo "GtRNAdb2,{params.version},{params.url},{params.date}" > {log}
+        """
