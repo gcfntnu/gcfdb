@@ -89,7 +89,7 @@ rule txgenomics_org_prebuild:
         fasta = join(TX_EXT, 'fasta', 'genome.fa'),
         star_index = join(TX_EXT, 'star', 'SA')
     log:
-        join(TX_EXT, 'logs', '10x.log')
+        join(TX_EXT, 'logs', '10x-reference.log')
     shell:
         """
         curl {params.url} | tar xvz --strip-components=1 -C {params.out}
@@ -99,6 +99,6 @@ rule txgenomics_org_prebuild:
 rule txgenomics_all:
     input:
         join(EXT_DIR, '10xgenomics', '737K-april-2014_rc.txt'),
+        join(EXT_DIR, '10xgenomics', '737K-august-2016.txt.txt'),
         join(EXT_DIR, '10xgenomics', '3M-february-2018.txt'),
-        join(EXT_DIR, '10xgenomics', 'logs', '737K-august-2016.txt.log'),
-        join(TX_EXT, 'genes', 'genes.gtf')
+        join(TX_EXT, 'reference.json')
