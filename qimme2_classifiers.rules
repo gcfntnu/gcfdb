@@ -1,0 +1,10 @@
+#-*- mode:snakemake -*-
+"""QIMME2 classifiers
+
+
+"""
+from os.path import join
+
+rule prebuild_classifiers:
+    output:
+        

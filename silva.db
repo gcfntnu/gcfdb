@@ -1,0 +1,36 @@
+#-*- mode:snakemake -*-
+"""SILVA Ribosomal RNA database
+
+https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_132_release.zip
+"""
+from os.path import join
+
+#SILVA_VER = config['db']['silva']['release']
+SILVA_VER = '132'
+if not SILVA_VER in ['132']:
+    raise ValueError('Only 132 is supported SILVA releases')
+
+URL = 'https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_132_release.zip'
+
+LEVELS = [90, 94, 97, 99]
+EVIDENCE = ['consensus', 'majority']
+
+EXT_DIR = 'data/test'
+
+rule silva_db_all:
+    params:
+        url = URL,
+        outdir = join(EXT_DIR, 'silva', SILVA_VER),
+        tmpdir = '/tmp' # fixme
+    output:
+        expand(join(EXT_DIR, 'silva', SILVA_VER, 'taxonomy', '16S_only', '{level}', '{evidence}_taxonomy_7_levels.txt'), level=LEVELS, evidence=EVIDENCE),
+        expand(join(EXT_DIR, 'silva', SILVA_VER, 'rep_set', 'rep_set_16S_only', '{level}', 'silva_132_{level}_16S.fna'), level=LEVELS),
+        expand(join(EXT_DIR, 'silva', SILVA_VER, 'trees', '{level}', '{level}_otus.tre')
+    
+    shell:
+        """
+        wget {params.url}
+        unzip Silva_{SILVA_VER}_release.zip
+        mv Silva_{SILVA_VER}_release/* {params.outdir}
+        rm -rf Silva_{SILVA_VER}_release
+        """
