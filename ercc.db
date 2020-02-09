@@ -49,10 +49,26 @@ rule ercc_gtf_gene:
     shell:
         'python {params.script} {input} --exon2gene > {output}'    
 
+
+rule ercc_annotations:
+    params:
+        url = 'http://tools.thermofisher.com/content/sfs/manuals/cms_095046.txt',
+        date = datetime.now().strftime("%d-%m-%Y")
+    output:
+        join(ERCC_DIR, 'genes', 'ERCC92.anno')
+    log:
+        join(ERCC_DIR, 'logs', 'ERCC_anno.log') 
+    shell:
+        """
+        wget -O - {params.url} > {output}
+        echo "ERCC annotations,NA,{params.url},{params.date}" > {log}
+        """
+        
 rule ercc_db_all:
     input:
         join(ERCC_DIR, 'fasta', 'ERCC92.fa'),
         join(ERCC_DIR, 'genes', 'ERCC92.gtf'),
         join(ERCC_DIR, 'genes', 'ERCC92.gene.gtf'),
+        join(ERCC_DIR, 'genes', 'ERCC92.anno'),
         join(ERCC_DIR, 'index', 'ERCC92', 'bowtie', 'ERCC92.1.ebwt'),
         join(ERCC_DIR, 'index', 'ERCC92', 'bowtie2', 'ERCC92.1.bt2')
