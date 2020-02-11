@@ -15,9 +15,7 @@ URL = 'https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_132_releas
 LEVELS = [90, 94, 97, 99]
 EVIDENCE = ['consensus', 'majority']
 
-EXT_DIR = 'data/test'
-
-rule silva_db_all:
+rule silva_db:
     params:
         url = URL,
         outdir = join(EXT_DIR, 'silva', SILVA_VER),
@@ -25,7 +23,7 @@ rule silva_db_all:
     output:
         expand(join(EXT_DIR, 'silva', SILVA_VER, 'taxonomy', '16S_only', '{level}', '{evidence}_taxonomy_7_levels.txt'), level=LEVELS, evidence=EVIDENCE),
         expand(join(EXT_DIR, 'silva', SILVA_VER, 'rep_set', 'rep_set_16S_only', '{level}', 'silva_132_{level}_16S.fna'), level=LEVELS),
-        expand(join(EXT_DIR, 'silva', SILVA_VER, 'trees', '{level}', '{level}_otus.tre')
+        expand(join(EXT_DIR, 'silva', SILVA_VER, 'trees', '{level}', '{level}_otus.tre'), level=LEVELS)
     
     shell:
         """
@@ -34,3 +32,25 @@ rule silva_db_all:
         mv Silva_{SILVA_VER}_release/* {params.outdir}
         rm -rf Silva_{SILVA_VER}_release
         """
+
+rule silva_db_symlink:
+    input:
+        ref = join(EXT_DIR, 'silva', SILVA_VER, 'rep_set', 'rep_set_16S_only', '{level}', 'silva_132_{level}_16S.fna')),
+        taxa = join(EXT_DIR, 'silva', SILVA_VER, 'taxonomy', '16S_only', '{level}', 'majority_taxonomy_7_levels.txt'),
+        tre = join(EXT_DIR, 'silva', SILVA_VER, 'trees', '{level}', '{level}_otus.tre')
+    output:
+        ref = join(EXT_DIR, 'silva', SILVA_VER, 'fasta', '{level}', 'otus.fa'),
+        taxa = join(EXT_DIR, 'silva', SILVA_VER, 'anno', '{level}', 'otus_taxonomy.txt'),
+        tre = join(EXT_DIR, 'silva', SILVA_VER, 'anno', '{level}', 'otus.tree')
+    shell:
+        """
+        ln -sr {input.ref} {output.ref}
+        ln -sr {input.taxa} {output.taxa}
+        ln -sr {input.tre} {output.tre}
+        """
+
+rule silva_db_all:
+    input:
+        expand(join(EXT_DIR, 'silva', SILVA_VER, 'fasta', '{level}', 'otus.fa'), level=LEVELS),
+        expand(join(EXT_DIR, 'silva', SILVA_VER, 'anno', '{level}', 'otus_taxonomy.txt'), level=LEVELS),
+        expand(join(EXT_DIR, 'silva', SILVA_VER, 'anno', '{level}', 'otus.tree'), level=LEVELS)      

@@ -19,8 +19,6 @@ makedirs(INTERIM_DIR, exist_ok=True)
 EXT_DIR = environ.get('GCF_EXT') or config.get('ext_dir', 'data/ext')
 FASTQ_DIR =  environ.get('GCF_FASTQ') or config.get('fastq_dir','data/raw/fastq')
 makedirs(FASTQ_DIR, exist_ok=True)
-PROCESSED_DIR =  environ.get('GCF_PROCESSED') or config.get('processed_dir', 'data/processed')
-makedirs(PROCESSED_DIR, exist_ok=True)
 
 if not 'db' in config:
     config['db'] = {}
@@ -70,7 +68,7 @@ libprep_fn = srcdir('libprep.config')
 with open(libprep_fn) as fh:
     LIBPREP_CONF  = yaml.load(fh) or {}
 kit = config.get('libprepkit')
-LIBPREP = LIBPREP_CONF.get(kit, {})
+LIBPREP = LIBPREP_CONF[kit]
 
 # docker images
 docker_fn = srcdir('docker.config')
