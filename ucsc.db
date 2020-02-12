@@ -7,11 +7,26 @@ UCSC_ORG = {'homo_sapiens': 'Human',
             'mus_musculus': 'Mouse'}
 ORG = config['organism']
 
-rule ucsc_rmsk:
+URL = 'https://gcf-winecellar.medisin.ntnu.no/ucsc/{}/genes/rmsk_gencode.gtf'.format(ORG)
+
+rule ucsc_gencode_rmsk:
     output:
-        join(EXT_DIR, 'ucsc', ORG, 'genes', 'rmsk.gtf')
+        gtf = join(EXT_DIR, 'ucsc', ORG, 'genes', 'rmsk_gencode.gtf')
     params:
-        script = srcdir('scripts/ucsc_rmsk.py'),
-        org = UCSC_ORG[ORG]
+        url = URL,
+        date = datetime.now().strftime("%d-%m-%Y")
+    log:
+        join(EXT_DIR, 'ucsc', ORG, 'rmsk.log')
     shell:
-        'python {params.script} {params.org} > {output}'
+        """
+        wget {params.url} -O-  > {output.gtf}
+        echo "UCSC rmsk,NA,{params.url},{params.date}" > {log}
+        """
+
+rule ucsc_ensembl_rmsk:
+    input:
+        rules.ucsc_gencode_rmsk.output.gtf
+    output:
+        join(EXT_DIR, 'ucsc', ORG, 'genes', 'rmsk_ensembl.gtf')
+    shell:
+        'sed s/chr// {input} > {output}'

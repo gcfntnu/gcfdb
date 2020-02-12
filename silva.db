@@ -29,13 +29,13 @@ rule silva_db:
         """
         wget {params.url}
         unzip Silva_{SILVA_VER}_release.zip
-        mv Silva_{SILVA_VER}_release/* {params.outdir}
-        rm -rf Silva_{SILVA_VER}_release
+        mv Silva_{SILVA_VER}_QIIME_release/* {params.outdir}
+        rm -rf Silva_{SILVA_VER}_QIIME_release
         """
 
 rule silva_db_symlink:
     input:
-        ref = join(EXT_DIR, 'silva', SILVA_VER, 'rep_set', 'rep_set_16S_only', '{level}', 'silva_132_{level}_16S.fna')),
+        ref = join(EXT_DIR, 'silva', SILVA_VER, 'rep_set', 'rep_set_16S_only', '{level}', 'silva_132_{level}_16S.fna'),
         taxa = join(EXT_DIR, 'silva', SILVA_VER, 'taxonomy', '16S_only', '{level}', 'majority_taxonomy_7_levels.txt'),
         tre = join(EXT_DIR, 'silva', SILVA_VER, 'trees', '{level}', '{level}_otus.tre')
     output:

@@ -6,22 +6,30 @@
 from os.path import join
 # libprep
 
-librep_conf_fn = srcdir('librep.config')
-if os.path.exists(librprep_conf_fn):
-    with open(librep_conf_fn) as fh:
-        ALL_LIBREP  = yaml.load(fh) or {}
-LIBREPS_16S = ['16S Metagenomic Sequencing Library Prep', 'QIAseq 16S ITS Region Panels']
+libprep_conf_fn = srcdir('libprep.config')
+if os.path.exists(libprep_conf_fn):
+    with open(libprep_conf_fn) as fh:
+        ALL_LIBPREP  = yaml.load(fh) or {}
+LIBPREPS_16S = ['16S Metagenomic Sequencing Library Prep', 'QIAseq 16S ITS Region Panels']
 
-DB = ['silva', 'greengenes']
+DB = ['silva']
 GG_RELEASES = ['13_8']
 SILVA_RELEASES = ['132']
 LEVELS = ['99']
 
 #QIASEQ_REGIONS = ['V1V2', 'V2V3', 'V4V5', 'V5V7', 'V7V9', 'ITS']
-QIASEQ_REGIONS = list(LIBREPS_16S['QIAseq 16S ITS Region Panels']['primers'].keys())
+QIASEQ_REGIONS = list(ALL_LIBPREP['QIAseq 16S ITS Region Panels']['primers'].keys())
 QIASEQ_REGIONS.remove('ITS')
 #ILMN_REGIONS = ['V4']
-ILMN_REGIONS = list(LIBREPS_16S['16S Metagenomic Sequencing Library Prep']['primers'].keys())
+ILMN_REGIONS = list(ALL_LIBPREP['16S Metagenomic Sequencing Library Prep']['primers'].keys())
+
+
+def get_primers(wildcards):
+    for k, v in ALL_LIBPREP.items():
+        if v['name'] == wildcards.libprep or k == wildcards.libprep.replace(' ', '_'):
+            p = v['primers'][wildcards.region]
+            return [p['forward'], p['reverse']]
+    raise ValueError
 
 rule prebuild_classifiers:
     params:
@@ -42,30 +50,30 @@ rule build_q2_classifer:
         taxa = join(EXT_DIR, '{db}', '{release}', 'anno', '{level}', 'otus_taxonomy.txt')
     params:
         script = srcdir('scripts/train_classifier.py'),
-        p1 = lambda input, wildcards: LIBPREP['primers']['forward'][wildcards.region],
-        p2 = lambda input, wildcards: LIBPREP['primers']['reverse'][wildcards.region],
-        libprep = lambda input, wildcards: LIBPREP['name']
+        #p1 = lambda wildcards: ALL_LIBPREP[wildcards.libprep]['primers'][wildcards.region]['forward'],
+        #p2 = lambda wildcards: ALL_LIBPREP[wildcards.libprep]['primers'][wildcards.region]['reverse']
+        p1 = lambda wildcards: get_primers(wildcards)[0],
+        p2 = lambda wildcards: get_primers(wildcards)[1]
     output:
-        join(EXT_DIR, '{db}', '{release}', 'qiime2', 'classifiers', '{librep}', '{region}', '{db}_{release}_{level}_{region}.qza')
+        join(EXT_DIR, '{db}', '{release}', 'qiime2', 'classifiers', '{libprep}', '{region}', '{db}_{release}_{level}_{region}.qza')
     singularity:
         'docker://' + config['docker']['qiime2']
+    threads:
+        8
     shell:
         'python {params.script} '
         '--fasta {input.ref} '
         '--taxa {input.taxa} '
         '--f-primer {params.p1} '
         '--r-primer {params.p2} '
-        '--p-trunc-len 500 '
-        '--p-min-length 100 '
-        '--p-max-length 600 '
+        '--min-len 30 '
         '--output {output} '
+        '--threads {threads} '
 
 rule q2_classifiers_all:
     input:
-        expand(join(EXT_DIR, 'silva', '{release}', 'qiime2', 'classifiers', 'QIAseq 16S ITS Region Panels', '{region}', '{db}_{release}_{level}_{region}.qza'),
-               relase=SILVA_RELEASES, level=LEVELS, region=QIASEQ_REGIONS),
-        expand(join(EXT_DIR, 'greengenes', '{release}', 'qiime2', 'classifiers', 'QIAseq 16S ITS Region Panels', '{region}', '{db}_{release}_{level}_{region}.qza'),
-               relase=GG_RELEASES, level=LEVELS, region=QIASEQ_REGIONS)
-        join(EXT_DIR, 'silva', '132', 'qiime2', 'classifiers', 'universal', 'all_regions', 'silva_132_99.qza'),
-        join(EXT_DIR, 'greengenes', '13_8', 'qiime2', 'classifiers', 'universal', 'all_regions', 'greengenes_13_8_99.qza'),
-        join(EXT_DIR, 'unite', '8_2', 'qiime2', 'classifiers', 'universal', 'ITS', 'unite_8_2_dynamic_ITS.qza')
+        expand(join(EXT_DIR, 'silva', '{release}', 'qiime2', 'classifiers', 'QIAseq_16S_ITS_Region_Panels', '{region}', 'silva_{release}_{level}_{region}.qza'), release=SILVA_RELEASES, level=LEVELS, region=QIASEQ_REGIONS),
+        #expand(join(EXT_DIR, 'greengenes', '{release}', 'qiime2', 'classifiers', 'QIAseq 16S ITS Region Panels', '{region}', 'greengenes_{release}_{level}_{region}.qza'),release=GG_RELEASES, level=LEVELS, region=QIASEQ_REGIONS),
+        join(EXT_DIR, 'silva', '132', 'qiime2', 'classifiers', 'universal', 'all_regions', 'silva_132_99.qza')
+        #join(EXT_DIR, 'greengenes', '13_8', 'qiime2', 'classifiers', 'universal', 'all_regions', 'greengenes_13_8_99.qza')
+        #join(EXT_DIR, 'unite', '8_2', 'qiime2', 'classifiers', 'universal', 'ITS', 'unite_8_2_dynamic_ITS.qza')
