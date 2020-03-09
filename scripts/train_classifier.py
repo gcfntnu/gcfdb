@@ -4,6 +4,7 @@
 
 import sys
 import argparse
+from os.path import join, dirname, basename, splitext
 
 from qiime2 import Artifact
 from qiime2.plugins.feature_classifier import methods
@@ -40,3 +41,5 @@ if __name__ == '__main__':
     q2_refseq_filtered = extract_region_fasta(q2_repset, fwd=args.f_primer, rev=args.r_primer, min_len=args.min_len, n_jobs=args.threads)
     classifier = train_classifier(q2_refseq_filtered.reads, q2_taxa)
     classifier.classifier.save(args.output)
+    
+    classifier.classifier.export_data(join(dirname(args.output), 'export', splitext(basename(args.output))[0] ))
