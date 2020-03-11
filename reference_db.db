@@ -21,7 +21,7 @@ elif 'reference_db' in config['db']:
     if ref == 'gencode':
         include: 'gencode.db'
     if ref == '10xgenomics':
-        include: '10xgenomics.db'    
+        include: '10xgenomics.db'
 
     DB_CONF = config['db'][ref]
     REF_DIR = join(EXT_DIR, ref, ORG, 'release-{}'.format(DB_CONF['release']), DB_CONF['assembly'])

@@ -33,20 +33,43 @@ rule contaminants_unitas:
     shell:
         'python {params.script} {input} > {output}'
 
-rule unitas_db:
+rule unitas_local:
     input:
         rules.unitas_dummy_input.output
     output:
-        db_log = join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'db_versions.info'),
-        seqmap_exe = join(EXT_DIR, 'unitas', 'seqmap.exe')
+        dir = directory('UNITAS_refdump_{}'.format(ORG)),
+        db_log = join('UNITAS_refdump_{}'.format(ORG), 'db_versions.info'),
+        seqmap_exe = 'seqmap.exe'
     params:
-        outdir = join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG))
+        outdir = 'UNITAS_refdump_{}'.format(ORG)
     singularity:
         'docker://' + config['docker']['unitas']     
     shell:
         """
         unitas.pl -latest_ref -species {ORG} -input {input}
-        mv UNITAS_refdump_* {EXT_DIR}/unitas/
+        """
+
+
+rule unitas_db:
+    input:
+        dir = rules.unitas_local.output.dir,
+        seqmap_exe = rules.unitas_local.output.seqmap_exe
+    output:
+        db_log = join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'db_versions.info'),
+        seqmap_exe = join(EXT_DIR, 'unitas', 'seqmap.exe'),
+        mb = join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'miRBase_hairpin')
+    params:
+        outdir = join(EXT_DIR, 'unitas'),
+        script = srcdir('scripts/format_unitas_dblog.py')
+    log:
+        join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'logs', 'unitas.log')
+    singularity:
+        'docker://' + config['docker']['default']   
+    shell:
+        """
+        mv {input.dir } {params.outdir}
+        mv {input.seqmap_exe} {output.seqmap_exe}
+        python {params.script} {output.db_log} > {log}
         """
 
 rule unitas_db_all:

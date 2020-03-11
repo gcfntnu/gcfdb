@@ -19,8 +19,16 @@ rule spikein_merged_fasta:
         join(EXT_DIR, 'spikein', 'fasta', 'smallrna_calibrators.fa')
     output:
         join(EXT_DIR, 'spikein', 'fasta', 'merged_spikein.fa')
+    params:
+        ercc_log = rules.ercc_files.log,
+        cal_log = rules.calibrators_fasta.log
+    log:
+        join(EXT_DIR, 'spikein', 'logs', 'merged_spikein.log')
     shell:
-        'cat {input} > {output}'
+        """
+        cat {input} > {output}
+        cat {params} > {log}
+        """
         
 
 rule spikein_db_all:
