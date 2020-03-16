@@ -39,14 +39,17 @@ def update_config2(config, extra_config):
       overwrite_config (dict): dictionary whose items will overwrite those in config
 
     """
-    
+
     def _update(d, u):
         for (key, value) in u.items():
             if (isinstance(value, collections.Mapping)):
                 d[key] = _update(d.get(key, {}), value)
+                print(key, value)
             else:
                 if not key in d:
                     d[key] = value
+                elif key == 'reference_db':
+                    d[key] =value
         return d
     return _update(config, extra_config)
 
