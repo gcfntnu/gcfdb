@@ -22,8 +22,6 @@ makedirs(FASTQ_DIR, exist_ok=True)
 
 if not 'db' in config:
     config['db'] = {}
-if not 'reference_db'in config['db']:
-    config['db']['reference_db'] = 'ensembl'
 
 def update_config2(config, extra_config):
     """Recursively update dictionary config with overwrite_config.
@@ -48,8 +46,6 @@ def update_config2(config, extra_config):
             else:
                 if not key in d:
                     d[key] = value
-                elif key == 'reference_db':
-                    d[key] =value
         return d
     return _update(config, extra_config)
 
