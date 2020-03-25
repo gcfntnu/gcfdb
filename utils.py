@@ -23,8 +23,6 @@ makedirs(FASTQ_DIR, exist_ok=True)
 
 if not 'db' in config:
     config['db'] = {}
-if not 'reference_db'in config['db']:
-    config['db']['reference_db'] = 'ensembl'
 
 def update_config2(config, extra_config):
     """Recursively update dictionary config with overwrite_config.
@@ -40,11 +38,12 @@ def update_config2(config, extra_config):
       overwrite_config (dict): dictionary whose items will overwrite those in config
 
     """
-    
+
     def _update(d, u):
         for (key, value) in u.items():
             if (isinstance(value, collections.Mapping)):
                 d[key] = _update(d.get(key, {}), value)
+                print(key, value)
             else:
                 if not key in d:
                     d[key] = value
