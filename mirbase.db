@@ -6,7 +6,7 @@ from datetime import datetime
 extra_conf_fn = srcdir('mirbase.config')
 if os.path.exists(extra_conf_fn):
     with open(extra_conf_fn) as fh:
-        c  = yaml.load(fh) or {}
+        c  = yaml.load(fh, Loader=Loader) or {}
         update_config2(config, c)
         
 MIRBASE_RELEASE = str(config['db']['mirbase'].get('release', '22'))

@@ -4,6 +4,7 @@ from os import makedirs, environ
 import sys
 import collections
 import yaml
+from yaml import CLoader as Loader
 from datetime import datetime
 
 
@@ -11,7 +12,7 @@ from snakemake.logging import logger
 from snakemake.workflow import srcdir
 from snakemake.utils import update_config, min_version
 
-min_version("5.1.2")
+min_version("5.10.0")
 TMPDIR = os.environ.get('TMPDIR', '/tmp')
 # environment variables can override config file
 INTERIM_DIR = environ.get('GCF_INTERIM') or config.get('interim_dir', 'data/tmp/')

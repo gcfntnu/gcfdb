@@ -9,7 +9,7 @@ from os.path import join
 libprep_conf_fn = srcdir('libprep.config')
 if os.path.exists(libprep_conf_fn):
     with open(libprep_conf_fn) as fh:
-        ALL_LIBPREP  = yaml.load(fh) or {}
+        ALL_LIBPREP  = yaml.load(fh, Loader=Loader) or {}
 LIBPREPS_16S = ['16S Metagenomic Sequencing Library Prep', 'QIAseq 16S ITS Region Panels']
 
 DB = ['silva']
