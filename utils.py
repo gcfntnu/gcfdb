@@ -42,7 +42,6 @@ def update_config2(config, extra_config):
         for (key, value) in u.items():
             if (isinstance(value, collections.Mapping)):
                 d[key] = _update(d.get(key, {}), value)
-                print(key, value)
             else:
                 if not key in d:
                     d[key] = value
