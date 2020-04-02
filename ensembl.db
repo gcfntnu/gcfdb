@@ -112,6 +112,10 @@ else:
     ENS_NAME = ''
 
 ERCC = DB_CONF.get('add_ercc', False)
+DB_CONF['add_ercc'] = ERCC
+
+
+config['db']['ensembl'] = DB_CONF
 OUTDIR = join(EXT_DIR, 'ensembl', ORG, 'release-{}'.format(ENS_RELEASE), ENS_ASSEMBLY)
 
 # includes

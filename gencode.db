@@ -41,6 +41,8 @@ else:
 config['db']['assembly'] = DB_CONF['assembly'] = GENCODE_ASSEMBLY
 TRANSCRIPTOME_TYPE = DB_CONF.get('transcriptome_type', 'pc_') #['pc_','']
 ERCC = DB_CONF.get('add_ercc', False)
+
+config['db']['gencode'] = DB_CONF
 OUTDIR = join(EXT_DIR, 'gencode', ORG, 'release-{}'.format(GENCODE_RELEASE), GENCODE_ASSEMBLY)
 
 # includes
