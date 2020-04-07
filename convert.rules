@@ -2,17 +2,30 @@
 """Converters between common fileformats
 """
 
+rule pyensembl_version:
+    output:
+        'pyensembl.version'
+    singularity:
+        'docker://' + config['docker']['pyensembl']
+    params:
+        script = srcdir('scripts/pyensembl_version.py'),
+        docker = config['docker']['pyensembl']
+    shell:
+        'python {params.script} {params.docker} > {output}'
+
 rule convert_gtf2gene_csv:
     input:
-        join('{ref_dir}', 'genes', 'genes.gtf')
+        gtf = join('{ref_dir}', 'genes', 'genes.gtf')
     params:
-        script = srcdir('scripts/gtf2genes.py')
+        script = srcdir('scripts/gtf2genes.py'),
     output:
-        join('{ref_dir}', 'genes', 'genes.tsv')
+        tsv = join('{ref_dir}', 'genes', 'genes.tsv')
     singularity:
         'docker://' + config['docker']['pyensembl']
     shell:
-        'python {params.script} {input} > {output}'
+        """
+        python {params.script} {input.gtf} > {output.tsv}
+        """
         
 rule convert_gtf2transcript_csv:
     input:

@@ -131,7 +131,7 @@ In the "experiment" column, "1" indicates experimentally validated interactions 
 extra_conf_fn = srcdir('lncbook.config')
 if os.path.exists(extra_conf_fn):
     with open(extra_conf_fn) as fh:
-        c  = yaml.load(fh) or {}
+        c  = yaml.load(fh, Loader=Loader) or {}
         update_config2(config, c)
 
         
@@ -147,6 +147,8 @@ rule lncbook_gencode_gtf:
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(EXT_DIR, 'lncbook', 'genes', 'lncbook.gtf')
+    log:
+        join(EXT_DIR, 'lncbook', 'logs', 'gtf.log')
     shell:
         """
         wget -O- '{params.url}' | gunzip -c > {output}

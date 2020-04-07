@@ -25,25 +25,29 @@ from os.path import join
 extra_conf_fn = srcdir('10xgenomics.config')
 if os.path.exists(extra_conf_fn):
     with open(extra_conf_fn) as fh:
-        c  = yaml.load(fh) or {}
+        c  = yaml.load(fh, Loader=Loader) or {}
         update_config2(config, c)
 
 # config
 ORG = config.get('organism', 'homo_sapiens')
 if ORG not in ['homo_sapiens', 'mus_musculus', 'homo_sapiens__mus_musculus']:
     raise ValueError('No 10x prebuild for org: {}'.format(ORG))
-TX_CONFIG = config['db'].get('10xgenomics', {})
-_NAME = TX_CONFIG['assembly'] = _ASSEMBLY[ORG]
-TX_EXT = join(EXT_DIR, '10xgenomics', ORG, _NAME)
+
+DB_CONF = config['db'].get('10xgenomics', {})
+TX_RELEASE = DB_CONF['release']
+TX_ASSEMBLY = config['db']['assembly'] = DB_CONF['assembly'] = _ASSEMBLY[ORG]
+
+config['db']['10xgenomics'] = DB_CONF
+OUTDIR = join(EXT_DIR, '10xgenomics', ORG, 'release-{}'.format(TX_RELEASE), TX_ASSEMBLY)
 
 rule txgenomics_whitelist_v1:
     params:
         url = _URLS['whitelist_v1'],
         date = datetime.now().strftime("%d-%m-%Y")
     output:
-        join(EXT_DIR, '10xgenomics', '737K-april-2014_rc.txt')
+        join(OUTDIR, '737K-april-2014_rc.txt')
     log:
-        join(EXT_DIR, '10xgenomics', 'logs', '737K-april-2014_rc.log')
+        join(OUTDIR, 'logs', '737K-april-2014_rc.log')
     shell:
         """
         wget -O {output} {params.url}
@@ -55,9 +59,9 @@ rule txgenomics_whitelist_v2:
         url = _URLS['whitelist_v2'],
         date = datetime.now().strftime("%d-%m-%Y")
     output:
-        join(EXT_DIR, '10xgenomics', '737K-august-2016.txt.txt')
+        join(OUTDIR, '737K-august-2016.txt.txt')
     log:
-        join(EXT_DIR, '10xgenomics', 'logs', '737K-august-2016.txt.log')
+        join(OUTDIR, 'logs', '737K-august-2016.txt.log')
     shell:
         """
         wget -O {output} {params.url}
@@ -69,9 +73,9 @@ rule txgenomics_whitelist_v3:
         url = _URLS['whitelist_v3'],
         date = datetime.now().strftime("%d-%m-%Y")
     output:
-        join(EXT_DIR, '10xgenomics', '3M-february-2018.txt')
+        join(OUTDIR, '3M-february-2018.txt')
     log:
-        join(EXT_DIR, '10xgenomics', 'logs', '3M-february-2018.txt.log')
+        join(OUTDIR, 'logs', '3M-february-2018.txt.log')
     shell:
         """
         wget -O {output} {params.url}
@@ -81,15 +85,15 @@ rule txgenomics_whitelist_v3:
 rule txgenomics_org_prebuild:
     params:
         url = _URLS[ORG],
-        out = TX_EXT,
+        out = OUTDIR,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
-        json = join(TX_EXT, 'reference.json'),
-        gtf = join(TX_EXT, 'genes', 'genes.gtf'),
-        fasta = join(TX_EXT, 'fasta', 'genome.fa'),
-        star_index = join(TX_EXT, 'star', 'SA')
+        json = join(OUTDIR, 'reference.json'),
+        gtf = join(OUTDIR, 'genes', 'genes.gtf'),
+        fasta = join(OUTDIR, 'fasta', 'genome.fa'),
+        star_index = join(OUTDIR, 'star', 'SA')
     log:
-        join(TX_EXT, 'logs', '10x.log')
+        join(OUTDIR, 'logs', '10x-reference.log')
     shell:
         """
         curl {params.url} | tar xvz --strip-components=1 -C {params.out}
@@ -98,7 +102,7 @@ rule txgenomics_org_prebuild:
 
 rule txgenomics_all:
     input:
-        join(EXT_DIR, '10xgenomics', '737K-april-2014_rc.txt'),
-        join(EXT_DIR, '10xgenomics', '3M-february-2018.txt'),
-        join(EXT_DIR, '10xgenomics', 'logs', '737K-august-2016.txt.log'),
-        join(TX_EXT, 'genes', 'genes.gtf')
+        join(OUTDIR, '737K-april-2014_rc.txt'),
+        join(OUTDIR, '737K-august-2016.txt.txt'),
+        join(OUTDIR, '3M-february-2018.txt'),
+        join(OUTDIR, 'reference.json')

@@ -5,7 +5,7 @@
 extra_conf_fn = srcdir('rnacentral.config')
 if os.path.exists(extra_conf_fn):
     with open(extra_conf_fn) as fh:
-        c  = yaml.load(fh) or {}
+        c  = yaml.load(fh, Loader=Loader) or {}
         update_config2(config, c)
 
 
@@ -29,19 +29,31 @@ RNACENTRAL_DIR = join(EXT_DIR, 'rnacentral', config['organism'], config['db']['a
 
 rule rnacentral_gff:
     params:
-        url = RNACENTRAL_GFF
+        url = RNACENTRAL_GFF,
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(RNACENTRAL_DIR, 'genes', RNACENTRAL_ORG + '.gff')
+    log:
+        join(RNACENTRAL_DIR, 'logs', 'gff.log')
     shell:
-        'wget -O - {params.url} | gunzip -c > {output}'
+        """
+        wget -O - {params.url} | gunzip -c > {output}
+        echo "RNAcentral gff,{RNACENTRAL_RELEASE},{params.url},{params.date}" > {log}
+        """
 
 rule rnacentral_bed:
     params:
-        url = RNACENTRAL_BED
+        url = RNACENTRAL_BED,
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(RNACENTRAL_DIR, 'genes', RNACENTRAL_ORG + '.bed')
+    log:
+        join(RNACENTRAL_DIR, 'logs', 'bed.log')    
     shell:
-        'wget -O - {params.url} | gunzip -c > {output}'  
+        """
+        wget -O - {params.url} | gunzip -c > {output}
+        echo "RNAcentral bed,{RNACENTRAL_RELEASE},{params.url},{params.date}" > {log}
+        """
 
 rule rnacentral_gtf:
     input:
@@ -50,33 +62,53 @@ rule rnacentral_gtf:
         join(RNACENTRAL_DIR, 'genes', RNACENTRAL_ORG + '.gtf')
     singularity:
         'docker://' + config['docker']['gffread']
+    log:
+        rules.rnacentral_gff.log
     shell:
         'gffread {input} -T -o {output}'
 
 rule rnacentral_fasta:
     params:
-        url = RNACENTRAL_FASTA
+        url = RNACENTRAL_FASTA,
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(RNACENTRAL_DIR, 'fasta', 'rnacentral_active.fa')
+    log:
+        join(RNACENTRAL_DIR, 'logs', 'fasta.log')          
     shell:
-        'wget -O - {params.url} | gunzip -c > {output}'
+        """
+        wget -O - {params.url} | gunzip -c > {output}
+        echo "RNAcentral fasta,{RNACENTRAL_RELEASE},{params.url},{params.date}" > {log}
+        """
         
 rule rnacentral_ids:
     params:
-        url = RNACENTRAL_MAP
+        url = RNACENTRAL_MAP,
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(RNACENTRAL_DIR, 'id_mapping.tsv')
+    log:
+        join(RNACENTRAL_DIR, 'logs', 'id-mapping.log')  
     shell:
-        'wget -O - {params.url} | gunzip -c > {output}'
+        """
+        wget -O - {params.url} | gunzip -c > {output}
+        echo "RNAcentral id_mapping,{RNACENTRAL_RELEASE},{params.url},{params.date}" > {log}
+        """
 
 # example of a specific db id-mapping
 rule rnacentral_mapping:
     params:
-        url = join(RNACENTRAL_DBMAP, '{db}.tsv') 
+        url = join(RNACENTRAL_DBMAP, '{db}.tsv'),
+        date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(RNACENTRAL_DIR, 'rnacentral_{db}.tsv')
+    log:
+        join(RNACENTRAL_DIR, 'logs', '{db}-mapping.log') 
     shell:
-        'wget -O - {params.url} > {output}'
+        """
+        wget -O - {params.url} > {output}
+        echo "RNAcentral {wildcards.db}_mapping,{RNACENTRAL_RELEASE},{params.url},{params.date}" > {log}
+        """
 
 rule rnacentral_ensembl:
     input:

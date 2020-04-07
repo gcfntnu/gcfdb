@@ -25,8 +25,8 @@ rule quickmirseq_mirbase_index:
     output:
         join(QMSQ_EXT, 'mirna_0_0.fa')
     log:
-       build_log = join(QMSQ_EXT, 'logs', 'QuickMIRSeq-build.log'),
-       db = join(QMSQ_EXT, 'logs', 'quickmirseq.mirbase.db.log')
+       build_log = join(QMSQ_EXT, 'logs', 'QuickMIRSeq-build.txt'),
+       db = join(QMSQ_EXT, 'logs', 'quickmirseq_mirbase.log')
     shell:
         """
         perl $QuickMIRSeq/QuickMIRSeq-build.pl --target {QMSQ_EXT} --mirna {input.mature} --hairpin {input.hairpin} {params.args}
@@ -52,7 +52,7 @@ rule quickmirseq_smallrna_index:
     singularity:
         'docker://' + config['docker']['quickmirseq']
     log:
-        join(QMSQ_EXT, 'logs', 'quickmirseq.smallrna.db.log')
+        join(QMSQ_EXT, 'logs', 'quickmirseq_smallrna.log')
     shell:
         # merge creates a fasta file one entry per biotype 
         """
@@ -73,28 +73,39 @@ rule quickmirseq_mrna_index:
         join(QMSQ_EXT, 'mrna.2.ebwt'),
         join(QMSQ_EXT, 'mrna.rev.1.ebwt'),
         join(QMSQ_EXT, 'mrna.rev.2.ebwt')
+    log:
+        join(QMSQ_EXT, 'logs', 'quickmirseq_cdna.log')
     singularity:
         'docker://' + config['docker']['bowtie_samtools']
     shell:
-        'bowtie-build {input.cdna} {QMSQ_EXT}/mrna '
-        '&& cp {input.cdna} {output[0]} '
+        """
+        bowtie-build {input.cdna} {QMSQ_EXT}/mrna
+        cp {input.cdna} {output[0]}
+        cp {params.cdna_log} {log}
+        """
         
 rule quickmirseq_genome_index:
     input:
         genome = rules.ensembl_db_downloads.output.genome
     params:
-        index_base = join(QMSQ_EXT, 'genome')
+        index_base = join(QMSQ_EXT, 'genome'),
+        genome_log = rules.ensembl_dna.log
     output:
         join(QMSQ_EXT, 'genome.fa'),
         join(QMSQ_EXT, 'genome.1.ebwt'),
         join(QMSQ_EXT, 'genome.2.ebwt'),
         join(QMSQ_EXT, 'genome.rev.1.ebwt'),
         join(QMSQ_EXT, 'genome.rev.2.ebwt')
+    log:
+        join(QMSQ_EXT, 'logs', 'quickmirseq_dna.log')   
     singularity:
         'docker://' + config['docker']['bowtie_samtools']
     shell:
-        'bowtie-build {input.genome} {params.index_base} '
-        '&& cp {input.noncoding} {output[0]} '
+        """
+        bowtie-build {input.genome} {params.index_base} 
+        cp {input.noncoding} {output[0]} 
+        cp {params.genome_log} {log}
+        """
         
 rule quickmirseq_db_all:
     input:

@@ -67,6 +67,16 @@ rule hisat2_genome_index:
         '{input.genome} '
         '{params.prefix} '
 
+rule hisat2_splicesites:
+    input:
+        gtf = join('{ref_dir}', 'genes', 'genes.gtf')
+    output:
+        join('{ref_dir}', 'genes', 'splicesites.txt')
+    singularity:
+       'docker://' + config['docker']['hisat2'] 
+    shell:
+        'hisat2_extract_splice_sites.py {input.gtf} > {output}'
+
 rule bowtie_index:
     input:
         join('{ref_dir}', 'fasta', '{prefix}.fa')
