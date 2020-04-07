@@ -4,14 +4,8 @@
 Two versions with and without added spikein sequences
 
 """
-
-from os.path import join
-import yaml
 import string
 from datetime import datetime
-
-from snakemake.logging import logger
-
 
 # config
 extra_conf_fn = srcdir('ensembl.config')

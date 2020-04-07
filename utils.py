@@ -43,7 +43,6 @@ def update_config2(config, extra_config):
         for (key, value) in u.items():
             if (isinstance(value, collections.Mapping)):
                 d[key] = _update(d.get(key, {}), value)
-                print(key, value)
             else:
                 if not key in d:
                     d[key] = value
@@ -59,27 +58,27 @@ for section in default_config_sections:
 # load function for statistical models
 def load_model(model_yaml_file):
     with open(model_yaml_file) as fh:
-        MODELS  = yaml.load(fh) or {}
+        MODELS  = yaml.load(fh, Loader=Loader) or {}
         config['models'] = MODELS
         config['model_names'] = list(MODELS.keys())
 
 # library preparation kit specific configuration
 libprep_fn = srcdir('libprep.config')
 with open(libprep_fn) as fh:
-    LIBPREP_CONF  = yaml.load(fh) or {}
+    LIBPREP_CONF  = yaml.load(fh, Loader=Loader) or {}
 kit = config.get('libprepkit')
 if kit in LIBPREP_CONF:
     LIBPREP = LIBPREP_CONF[kit]
 else:
     if kit is None:
-        warnings.warn('Running without librekit defined')
+        logger.warning('Running without LIBREPKIT defined!')
     else:
-        warnings.warn('`{}` is not a valid librepkit name'.format(kit))
+        logger.warning('`{}` is not a valid librepkit name'.format(kit))
         sys.exit()
     
 
 # docker images
 docker_fn = srcdir('docker.config')
 with open(docker_fn) as fh:
-    dck = yaml.load(fh) or {}
+    dck = yaml.load(fh, Loader=Loader) or {}
     update_config2(config, dck)
