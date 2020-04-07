@@ -4,20 +4,14 @@
 Two versions with and without added spikein sequences
 
 """
-
-from os.path import join
-import yaml
 import string
 from datetime import datetime
-
-from snakemake.logging import logger
-
 
 # config
 extra_conf_fn = srcdir('ensembl.config')
 if os.path.exists(extra_conf_fn):
     with open(extra_conf_fn) as fh:
-        c  = yaml.load(fh) or {}
+        c  = yaml.load(fh, Loader=Loader) or {}
         update_config2(config, c)
         
 def _ens_species_rest(grch37=False):
@@ -112,6 +106,10 @@ else:
     ENS_NAME = ''
 
 ERCC = DB_CONF.get('add_ercc', False)
+DB_CONF['add_ercc'] = ERCC
+
+
+config['db']['ensembl'] = DB_CONF
 OUTDIR = join(EXT_DIR, 'ensembl', ORG, 'release-{}'.format(ENS_RELEASE), ENS_ASSEMBLY)
 
 # includes

@@ -8,7 +8,7 @@ SORTMERNA_TMP = os.path.join(environ.get('TMPDIR', '/tmp'), 'sortmerna')
 extra_conf_fn = srcdir('sortmerna.config')
 if os.path.exists(extra_conf_fn):
     with open(extra_conf_fn) as fh:
-        c  = yaml.load(fh) or {}
+        c  = yaml.load(fh, Loader=Loader) or {}
         update_config2(config, c)
 
 SMDB = config['db']['sortmerna']['db'].split(',')
