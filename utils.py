@@ -69,6 +69,8 @@ with open(libprep_fn) as fh:
 kit = config.get('libprepkit')
 if kit in LIBPREP_CONF:
     LIBPREP = LIBPREP_CONF[kit]
+    if 'reference_db' in LIBPREP:
+        config['db']['reference_db'] = LIBPREP['reference_db']
 else:
     if kit is None:
         logger.warning('Running without LIBREPKIT defined!')

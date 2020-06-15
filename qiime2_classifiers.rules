@@ -30,6 +30,7 @@ for k, v in ALL_LIBPREP['QIAseq 16S ITS Region Panels']['primers'].items():
 QIASEQ_16S.append('universal')
 #ILMN_16S = ['V4']
 ILMN_16S = list(ALL_LIBPREP['16S Metagenomic Sequencing Library Prep']['primers'].values())
+ILMN_ITS = list(ALL_LIBPREP['ITS Low Input GCF Custom']['primers'].values())
 
 ruleorder: prebuild_classifiers > build_q2_classifer
 
@@ -94,5 +95,7 @@ rule q2_classifiers_all:
         expand(join(EXT_DIR, 'greengenes', '{release}', 'qiime2', 'classifiers', 'export', '{level}_{region}', 'sklearn_pipeline.tar'),
                release=GG_RELEASES, region=QIASEQ_16S, level=LEVELS),
         expand(join(EXT_DIR, 'unite', '{release}', 'qiime2', 'classifiers', 'export', '{level}_{region}', 'sklearn_pipeline.tar'),
-               release=UNITE_RELEASES, region=QIASEQ_ITS, level=UNITE_LEVELS)
+               release=UNITE_RELEASES, region=QIASEQ_ITS, level=UNITE_LEVELS),
+        expand(join(EXT_DIR, 'unite', '{release}', 'qiime2', 'classifiers', 'export', '{level}_{region}', 'sklearn_pipeline.tar'),
+                release=UNITE_RELEASES, region=ILMN_ITS, level=UNITE_LEVELS)
 
