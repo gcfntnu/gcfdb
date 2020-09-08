@@ -33,7 +33,7 @@ if config.get('strain'):
     raise ValueError('Specifc strain genomes are not supported by Gencode')
 GENCODE_ORG = GC_ORG_MAP[ORG]
 DB_CONF = config['db']['gencode']
-GENCODE_RELEASE = DB_CONF.get('release', 'M23')
+GENCODE_RELEASE = DB_CONF.get('release', '34')
 if ORG == 'homo_sapiens':
     GENCODE_ASSEMBLY = 'GRCh37' if int(GENCODE_RELEASE) <= 19 else 'GRCh38'
 else:
