@@ -1,9 +1,55 @@
 #-*- mode:snakemake -*-
 """Indexes from fasta
 """
+import os
+import math
+
 
 include:
     'convert.rules'
+
+# code from 10xgenomics code:
+def index_reference_with_mem_gb(in_fasta_fn, mem_gb=32):
+    # Estimate genome size based on fasta
+    genome_size_b = float(os.path.getsize(in_fasta_fn))
+    genome_size_gb = float(genome_size_b) / float(10**9)
+    
+    # Count number of chromsomes in fasta
+    genome_num_chrs = 0
+    with open(in_fasta_fn, 'r') as f:
+        for line in f:
+            if line.strip().startswith('>'):
+                genome_num_chrs += 1
+
+    # Per STAR manual recommendations
+    sa_index_n_bases = min(14, int(math.log(genome_size_b, 2)/2 - 1))
+    chr_bin_n_bits = min(18, int(math.log(genome_size_b/genome_num_chrs, 2)))
+
+    if mem_gb is None:
+        sa_sparse_d = None
+        limit_ram = None
+    else:
+        # Total memory = SA memory + SA index memory + Genome memory
+        # SA memory = (8 * genome size) / genomeSAsparseD
+        # SA index memory = 8*(4**genomeSAindexNbases)
+        # Genome memory = genome size
+        sa_index_mem_gb = float(8 * (4 ** sa_index_n_bases)) / float(10 ** 9)
+        genome_mem_gb = genome_size_gb
+    
+        min_mem_gb = int(genome_mem_gb + sa_index_mem_gb + 3)
+        if mem_gb < min_mem_gb:
+            sys.exit("WARNING: STAR requires at least %d GB of memory when aligning reads to your reference.\nPlease start again with --memgb=%d." % (min_mem_gb, min_mem_gb))
+
+        limit_ram = mem_gb * 1024**3
+        
+        # 2 GB of buffer space
+        mem_gb = max(1, mem_gb - 2)
+        
+        sa_sparse_d = float(8 * genome_size_gb) / (float(mem_gb) - genome_mem_gb  - sa_index_mem_gb)
+        sa_sparse_d = max(1, int(math.ceil(sa_sparse_d)))
+
+        return sa_sparse_d, sa_index_n_bases, chr_bin_n_bits
+        
         
 rule star_genome_index_gtf:
     input: 
@@ -13,7 +59,10 @@ rule star_genome_index_gtf:
         index = join('{ref_dir}', 'index', '{prefix}', 'star', 'r_{sjdbOverhang}', 'SA')
     params:
         index_dir =  join('{ref_dir}', 'index', '{prefix}', 'star', 'r_{sjdbOverhang}'),
-        sjdbOverhang = '{sjdbOverhang}'
+        sjdbOverhang = '{sjdbOverhang}',
+        sa_sparse_d = lambda wildcards, input: index_reference_with_mem_gb(input.genome)[0],
+        sa_index_n_bases = lambda wildcards, input: index_reference_with_mem_gb(input.genome)[1],
+        chr_bin_n_bits = lambda wildcards, input: index_reference_with_mem_gb(input.genome)[2],
     threads:
         48
     singularity:
@@ -26,6 +75,8 @@ rule star_genome_index_gtf:
         '--genomeFastaFiles {input.genome} '
         '--sjdbGTFfile {input.gtf} '
         '--sjdbOverhang {params.sjdbOverhang} '
+        '--genomeSAindexNbases {params.sa_index_n_bases} '
+        '--genomeSAsparseD {params.sa_sparse_d} '
 
 rule star_genome_index:
     input: 
