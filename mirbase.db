@@ -39,6 +39,8 @@ rule mirbase_hairpin_fasta:
         fasta = join(MIRBASE_EXT, 'fasta', 'hairpin.fa')
     log:
         join(MIRBASE_EXT, 'logs', 'hairpin.log')
+    singularity:
+        'docker://' + config['docker']['default']
     shell:
         """
         wget {params.url} -O- | gunzip -c | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output.fasta}
@@ -54,6 +56,8 @@ rule mirbase_mature_fasta:
         fasta = join(MIRBASE_EXT, 'fasta', 'mature.fa')
     log:
         join(MIRBASE_EXT, 'logs', 'mature.log')
+    singularity:
+        'docker://' + config['docker']['default']
     shell:
         """
         wget {params.url} -O- | gunzip -c | grep -A 1 "^>{params.mirbase_org}" | grep -v "^-" | sed 's/U/T/g' > {output}
@@ -68,13 +72,27 @@ rule mirbase_gff:
     output:
         join(MIRBASE_EXT, 'genes', 'genes.gff3')
     log:
-       join(MIRBASE_EXT, 'logs', 'gff.log') 
+       join(MIRBASE_EXT, 'logs', 'gff.log')
+    singularity:
+        'docker://' + config['docker']['default']
     shell:
         """
         wget -O - {params.url}/{params.mirbase_org}.gff3 > {output}
         echo "Mirbase gff,{MIRBASE_RELEASE},{params.url},{params.date}" > {log}
         """
 
+rule mirbase_genes:
+    input:
+        rules.mirbase_gff.output
+    params:
+        script = srcdir('scripts/mirbase_gff2genes.py')
+    output:
+        join(MIRBASE_EXT, 'genes', 'genes.tsv')
+    singularity:
+        'docker://' + config['docker']['default']
+    shell:
+        'python {params.script} {input} > {output}'
+        
 rule mirbase_mirna_str:
     params:
         url = URLS['mirna_str'],
@@ -84,6 +102,8 @@ rule mirbase_mirna_str:
         fasta = join(MIRBASE_EXT, 'genes', 'miRNA.str')
     log:
         join(MIRBASE_EXT, 'logs', 'mature.log')
+    singularity:
+        'docker://' + config['docker']['default']
     shell:
         """
         wget {params.url} -O- | gunzip -c > {output}
@@ -98,6 +118,7 @@ rule seqbuster_db:
         outdir = directory(join(MIRBASE_EXT, 'seqbuster'))
     run:
         for fn in input:
+            shell('mkdir -p {output.outdir}')
             shell('ln -sr {fn} -t {output.outdir}')
             
 rule mirbase_db_all:

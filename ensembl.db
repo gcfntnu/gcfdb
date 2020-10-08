@@ -119,11 +119,15 @@ if ERCC:
 include:
     'convert.rules'
 
+if ORG in ['homo_sapiens', 'mus_musculus', 'rattus_norvegicus']:
+    _genome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/dna/{}.{}.dna.primary_assembly.fa.gz'
+else:
+    _genome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/dna/{}.{}.dna.toplevel.fa.gz'
 
-_genome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/dna/{}.{}.dna.primary_assembly.fa.gz'
 _gtf = 'ftp.ensembl.org/pub{}/release-{}/gtf/{}/{}.{}.{}.gtf.gz'
-_transcriptome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/cdna/{}.{}.cdna.all.fa.gz'
 _ncdna = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/ncrna/{}.{}.ncrna.fa.gz'
+_transcriptome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/cdna/{}.{}.cdna.all.fa.gz'
+
 
 # ENSEMBL URLS 
 ENS_GENOME = _genome.format(ENS_NAME, ENS_RELEASE, ORG, string.capwords(ORG), ENS_ASSEMBLY)
