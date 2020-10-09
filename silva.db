@@ -6,8 +6,8 @@ https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_132_release.zip
 from os.path import join
 
 #SILVA_VER = config['db']['silva']['release']
-SILVA_VER = '132'
-if not SILVA_VER in ['132']:
+SILVA_VER = '138'
+if not SILVA_VER in ['128', '132', '138']:
     raise ValueError('Only 132 is supported SILVA releases')
 
 URL = 'https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_132_release.zip'
@@ -54,3 +54,77 @@ rule silva_db_all:
         expand(join(EXT_DIR, 'silva', SILVA_VER, 'fasta', '{level}', 'otus.fa'), level=LEVELS),
         expand(join(EXT_DIR, 'silva', SILVA_VER, 'anno', '{level}', 'otus_taxonomy.txt'), level=LEVELS),
         expand(join(EXT_DIR, 'silva', SILVA_VER, 'anno', '{level}', 'otus.tree'), level=LEVELS)      
+
+
+rule silva_rescript_db:
+    params:
+        version = SILVA_VER,
+        outdir = join(EXT_DIR, 'silva', SILVA_VER)
+    singularity:
+        'docker://' + config['docker']['qiime2']
+    output:
+        seqs = join(EXT_DIR, 'silva', SILVA_VER, 'silva-ssu-seqs.qza'),
+        taxa = join(EXT_DIR, 'silva', SILVA_VER, 'silva-ssu-taxa.qza')
+    shell:
+        'qiime rescript get-silva-data ' 
+        '--p-version {params.version} ' 
+        '--p-target SSURef_NR99 '
+        '--p-include-species-labels '
+        '--o-silva-sequences {output.seqs} '
+        '--o-silva-taxonomy {output.taxa} '
+        
+rule silva_rescript_cull:
+    input:
+        rules.silva_rescript_db.output.seqs
+    output:
+        seqs = join(EXT_DIR, 'silva', SILVA_VER, 'silva-ssu-cleaned-seqs.qza')
+    singularity:
+        'docker://' + config['docker']['qiime2']
+    shell:
+        'qiime rescript cull-seqs '
+        '--i-sequences {input} '
+        '--o-clean-sequences {output.seqs} '
+
+
+rule silva_rescript_filter_seq:
+    input:
+        seqs = rules.silva_rescript_cull.output.seqs,
+        taxa = rules.silva_rescript_db.output.taxa
+    output:
+        seqs = join(EXT_DIR, 'silva', SILVA_VER, 'silva-ssu-filtered-seqs.qza'),
+        discarded = join(EXT_DIR, 'silva', SILVA_VER, 'silva-ssu-discarded-seqs.qza')
+    singularity:
+        'docker://' + config['docker']['qiime2']
+    shell:
+        'qiime rescript filter-seqs-length-by-taxon '
+        '--i-sequences {input.seqs} '
+        '--i-taxonomy {input.taxa} '
+        '--p-labels Archaea Bacteria Eukaryota '
+        '--p-min-lens 900 1200 1400 '
+        '--o-filtered-seqs {output.seqs} '
+        '--o-discarded-seqs {output.discarded} '
+
+
+rule silva_rescript_derep_seqs:
+    input:
+        seqs = rules.silva_rescript_filter_seq.output.seqs,
+        taxa = rules.silva_rescript_db.output.taxa
+    output:
+        seqs = join(EXT_DIR, 'silva', SILVA_VER, 'silva-ssu-dedup-seqs.qza'),
+        taxa = join(EXT_DIR, 'silva', SILVA_VER, 'silva-ssu-dedup-taxa.qza')
+    params:
+        """--p-rank-handles 'silva' --p-mode 'uniq' """
+    singularity:
+        'docker://' + config['docker']['qiime2']
+    shell:
+        'qiime rescript dereplicate '
+        '--i-sequences  {input.seqs} '
+        '--i-taxa  {input.taxa} '
+        '--o-dereplicated-sequences {output.seqs} '
+        '--o-dereplicated-taxa  {output.taxa} '
+        '{params} '
+
+
+rule silva_rescript_all:
+    input:
+        join(EXT_DIR, 'silva', '138', 'silva-ssu-dedup-taxa.qza')
