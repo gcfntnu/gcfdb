@@ -7,13 +7,12 @@ UCSC_ORG = {'homo_sapiens': 'Human',
             'mus_musculus': 'Mouse'}
 ORG = config['organism']
 
-URL = 'https://gcf-winecellar.medisin.ntnu.no/ucsc/{}/genes/rmsk_gencode.gtf'.format(ORG)
 
 rule ucsc_gencode_rmsk:
     output:
         gtf = join(EXT_DIR, 'ucsc', ORG, 'genes', 'rmsk_gencode.gtf')
     params:
-        url = URL,
+        url = 'https://gcf-winecellar.medisin.ntnu.no/ucsc/{}/genes/rmsk_gencode.gtf'.format(ORG),
         date = datetime.now().strftime("%d-%m-%Y")
     log:
         join(EXT_DIR, 'ucsc', ORG, 'rmsk.log')
@@ -30,3 +29,26 @@ rule ucsc_ensembl_rmsk:
         join(EXT_DIR, 'ucsc', ORG, 'genes', 'rmsk_ensembl.gtf')
     shell:
         'sed s/chr// {input} > {output}'
+
+
+rule ucsc_gencode_trna:
+    output:
+        bed = join(EXT_DIR, 'ucsc', ORG, 'genes', 'trna_gencode.bed')
+    params:
+        url = 'https://gcf-winecellar.medisin.ntnu.no/ucsc/{}/genes/trna_gencode.bed'.format(ORG),
+        date = datetime.now().strftime("%d-%m-%Y")
+    log:
+        join(EXT_DIR, 'ucsc', ORG, 'rmsk.log')
+    shell:
+        """
+        wget {params.url} -O-  > {output.bed}
+        echo "UCSC rmsk,NA,{params.url},{params.date}" > {log}
+        """
+
+rule ucsc_ensembl_trna:
+    input:
+        rules.ucsc_gencode_trna.output.bed
+    output:
+        join(EXT_DIR, 'ucsc', ORG, 'genes', 'trna_ensembl.bed')
+    shell:
+        'sed s/chr// {input} > {output} '
