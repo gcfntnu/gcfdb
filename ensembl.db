@@ -18,7 +18,7 @@ def _ens_species_rest(grch37=False):
     """Ask ensembl rest api for species info
     """
     import requests, sys, pickle,os
-    cache_fn = os.path.join(os.environ['TMPDIR'], 'ensembl-98.cache')    
+    cache_fn = os.path.join(TMPDIR, 'ensembl-98.cache')    
     use_cache = os.path.exists(cache_fn)
     if use_cache:
         with open(cache_fn, 'rb') as fh:

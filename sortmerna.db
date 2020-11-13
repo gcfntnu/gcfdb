@@ -2,7 +2,7 @@
 from os import environ
 from os.path import join
 
-SORTMERNA_TMP = os.path.join(environ.get('TMPDIR', '/tmp'), 'sortmerna')
+SORTMERNA_TMP = os.path.join(TMPDIR, 'sortmerna')
 
 # config
 extra_conf_fn = srcdir('sortmerna.config')
