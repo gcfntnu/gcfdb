@@ -15,7 +15,7 @@ https://doi.org/10.1101/2020.10.05.326504
 """
 from os.path import join
 
-SILVA_VER = config['db']['silva']['release']
+SILVA_VER = config['db'].get('silva', {}).get('release', '132')
 if not SILVA_VER in ['128', '132', '138', '138.1']:
     raise ValueError('Only 132 is supported SILVA releases')
 
