@@ -119,7 +119,9 @@ if ERCC:
 include:
     'convert.rules'
 
-if ORG in ['homo_sapiens', 'mus_musculus', 'rattus_norvegicus']:
+PROTOCOL = 'ftp://'
+
+if ORG in ['homo_sapiens', 'mus_musculus']:
     _genome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/dna/{}.{}.dna.primary_assembly.fa.gz'
 else:
     _genome = 'ftp.ensembl.org/pub{}/release-{}/fasta/{}/dna/{}.{}.dna.toplevel.fa.gz'
@@ -137,7 +139,7 @@ ENS_NONCODING = _ncdna.format(ENS_NAME, ENS_RELEASE, ORG, string.capwords(ORG), 
 
 rule ensembl_dna:
     params:
-        url = ENS_GENOME,
+        url = PROTOCOL + ENS_GENOME,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, ENS_GENOME.split('.gz')[0])
@@ -153,7 +155,7 @@ rule ensembl_dna:
         
 rule ensembl_cdna:
     params:
-        url = ENS_TRANSCRIPTOME,
+        url = PROTOCOL + ENS_TRANSCRIPTOME,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, ENS_TRANSCRIPTOME.split('.gz')[0])
@@ -169,7 +171,7 @@ rule ensembl_cdna:
         
 rule ensembl_noncoding:
     params:
-        url = ENS_NONCODING,
+        url = PROTOCOL + ENS_NONCODING,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         join(OUTDIR, ENS_NONCODING.split('.gz')[0])
@@ -185,7 +187,7 @@ rule ensembl_noncoding:
 
 rule ensembl_gtf:
     params:
-        url = ENS_GTF,
+        url = PROTOCOL + ENS_GTF,
         date = datetime.now().strftime("%d-%m-%Y")
     output:
         gtf = join(OUTDIR, ENS_GTF.split('.gz')[0])
