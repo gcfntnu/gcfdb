@@ -42,7 +42,7 @@ rule unitas_db:
         db = directory(join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG))),
         seqmap_exe = join(EXT_DIR, 'unitas', 'seqmap.exe'),
     params:
-        ref_dir = join(EXT_DIR, 'unitas'),
+        refdir = join(EXT_DIR, 'unitas'),
         script = srcdir('scripts/format_unitas_dblog.py')
     log:
         join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'logs', 'unitas.log')
