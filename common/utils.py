@@ -4,7 +4,10 @@ from os import makedirs, environ
 import sys
 import collections
 import yaml
-from yaml import CLoader as Loader
+try:
+    from yaml import CLoader as Loader
+except:
+    from yaml import Loader as Loader
 from datetime import datetime
 
 

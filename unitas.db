@@ -16,7 +16,10 @@ _unitas_map = {'homo_sapiens': 'Human',
                'hsa': 'Human',
                'mus_musculus': 'Mouse',
                'mouse': 'Mouse',
-               'mmu': 'Mouse'}
+               'mmu': 'Mouse',
+               'rattus_norvegicus': 'Rat',
+               'rat': 'Rat',
+               'rno': 'Rat'}
 UNITAS_ORG = _unitas_map[config['organism']]
 
 rule unitas_dummy_input:
@@ -39,7 +42,7 @@ rule unitas_db:
         db = directory(join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG))),
         seqmap_exe = join(EXT_DIR, 'unitas', 'seqmap.exe'),
     params:
-        ref_dir = join(EXT_DIR, 'unitas'),
+        refdir = join(EXT_DIR, 'unitas'),
         script = srcdir('scripts/format_unitas_dblog.py')
     log:
         join(EXT_DIR, 'unitas', 'UNITAS_refdump_{}'.format(ORG), 'logs', 'unitas.log')
@@ -50,7 +53,7 @@ rule unitas_db:
         mkdir -p {params.refdir}
         cd {params.refdir}
         unitas.pl -latest_ref -species {ORG} -input {input}
-        python {params.script} {output.db_log} > {log}
+        python {params.script} {output.db} > {log}
         """
 
 rule unitas_db_all:

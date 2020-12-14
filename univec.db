@@ -28,6 +28,9 @@ include sequences of mammalian origin are excluded. Consequently, some
 vector contamination that could be detected using the full UniVec
 database may be missed when UniVec_Core is used.
 """
+include:
+    'indexes.rules'
+
 rule contaminants_univec_fasta:
     params:
         url = 'http://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec',
@@ -79,4 +82,6 @@ rule univec_core_anno:
 rule univec_db_all:
     input:
         join(EXT_DIR, 'univec', 'index', 'univec', 'bowtie', 'univec.1.ebwt'),
-        join(EXT_DIR, 'univec', 'index', 'univec', 'bowtie2', 'univec.1.bt2'),
+        join(EXT_DIR, 'univec', 'index', 'univec', 'bowtie2', 'univec.1.bt2'),  
+        join(EXT_DIR, 'univec_core', 'index', 'univec_core', 'bowtie', 'univec_core.1.ebwt'),
+        join(EXT_DIR, 'univec_core', 'index', 'univec_core', 'bowtie2', 'univec_core.1.bt2')
